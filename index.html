@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading OS - Cloud Engine</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card: #111827;
+            --border: #1f293d;
+            --neon-green: #089981;
+            --neon-red: #f23645;
+            --neon-cyan: #00f2fe;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { font-size: 20px; letter-spacing: 2px; color: var(--neon-cyan); margin: 0; }
+        
+        /* HUB CONTAINER */
+        .hub-container { display: grid; grid-template-columns: 320px 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .health-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; text-align: center; }
+        .circle-gauge { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(var(--neon-green) 0deg 216deg, var(--border) 216deg 360deg); display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+        .circle-inner { width: 120px; height: 120px; background: var(--card); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .health-val { font-size: 42px; font-weight: bold; }
+        
+        .cards-grid { display: flex; flex-direction: column; gap: 15px; }
+        .nav-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
+        .nav-card:hover { border-color: var(--neon-cyan); transform: translateX(5px); }
+
+        /* WINDOWS */
+        .window-view { display: none; max-width: 1200px; margin: 0 auto; }
+        .window-view.active { display: block; }
+        .btn-back { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
+        
+        /* FORM GRID */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: var(--card); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+        .input-group input, .input-group select, .input-group textarea { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 4px; }
+        
+        .btn-action { background: var(--neon-cyan); color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+
+        /* CALENDAR GRID */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .cal-day { background: var(--bg); border: 1px solid var(--border); padding: 12px; text-align: center; cursor: pointer; border-radius: 4px; font-size: 12px; }
+        .cal-day:hover { border-color: var(--neon-cyan); }
+
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 12px; }
+        th { background: #0f1523; color: var(--text-muted); }
+        .img-preview { width: 35px; height: 35px; border-radius: 4px; object-fit: cover; cursor: pointer; }
+    </style>
+
+    <!-- FIREBASE CLOUD SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHZk_0J62Xs3r6zzgawtcy65QDprrDotA",
+            authDomain: "my-trading-os.firebaseapp.com",
+            projectId: "my-trading-os",
+            storageBucket: "my-trading-os.firebasestorage.app",
+            messagingSenderId: "1076295999471",
+            appId: "1:1076295999471:web:c24b6e71f435d25a5c201a",
+            measurementId: "G-VX1PVYBLF0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.cloudAddDoc = addDoc;
+        window.cloudCollection = collection;
+        window.cloudGetDocs = getDocs;
+    </script>
+</head>
+<body>
+
+    <div class="header">
+        <h1>SYS :: CYBER TRADING OS (CLOUD CONNECTED)</h1>
+        <div style="font-size: 12px; color: var(--neon-green);">● CLOUD LIVE</div>
+    </div>
+
+    <!-- MAIN HUB -->
+    <div id="hubWindow" class="window-view active">
+        <div class="hub-container">
+            <div class="health-card">
+                <div class="circle-gauge">
+                    <div class="circle-inner">
+                        <div class="health-val" id="healthScore">0</div>
+                        <div style="font-size:10px; color:var(--text-muted)">HEALTH SCORE</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cards-grid">
+                <div class="nav-card" onclick="openWindow('tradeJournal')">
+                    <div><b>📝 SHEET 1: TRADES JOURNAL</b><br><small style="color:var(--text-muted)">Trade Log, Multipliers, Before/After Charts</small></div>
+                    <span>OPEN SHEET</span>
+                </div>
+                <div class="nav-card" onclick="openWindow('calendarSheet')">
+                    <div><b>📅 SHEET 2: CALENDAR & HISTORICAL SEARCH</b><br><small style="color:var(--text-muted)">Search any date from 2026 to 2050+</small></div>
+                    <span>OPEN SHEET</span>
+                </div>
+                <div class="nav-card" onclick="openWindow('reasonSummary')">
+                    <div><b>📊 SHEET 3: REASON & MODEL SUMMARY</b><br><small style="color:var(--text-muted)">Performance metrics per model</small></div>
+                    <span>OPEN SHEET</span>
+                </div>
+                <div class="nav-card" onclick="openWindow('dashboardSheet')">
+                    <div><b>🖥️ SHEET 4: EXECUTIVE DASHBOARD</b><br><small style="color:var(--text-muted)">Total PnL, Win Rate & Overall Health</small></div>
+                    <span>OPEN SHEET</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRADES JOURNAL SHEET -->
+    <div id="tradeJournal" class="window-view">
+        <button class="btn-back" onclick="showHub()">← Back to Main Hub</button>
+        <h2>Trades Log & Dynamic Calculations</h2>
+        <div class="form-grid">
+            <div class="input-group"><label>Date</label><input type="date" id="tDate"></div>
+            <div class="input-group"><label>Timeframe</label>
+                <select id="tTF"><option>M1</option><option>M5</option><option>M15</option><option>H1</option><option>H4</option><option>D1</option></select>
+            </div>
+            <div class="input-group"><label>Instrument</label>
+                <select id="tPair"><option value="EURUSD">EURUSD</option><option value="GBPUSD">GBPUSD</option><option value="XAUUSD">XAUUSD</option><option value="BTCUSD">BTCUSD</option></select>
+            </div>
+            <div class="input-group"><label>Setup Model</label>
+                <select id="tModel"><option>Liquidity Sweep</option><option>Inducement (IDM)</option><option>Fair Value Gap</option><option>Order Block</option></select>
+            </div>
+            <div class="input-group"><label>Side</label>
+                <select id="tSide"><option value="BUY">BUY</option><option value="SELL">SELL</option></select>
+            </div>
+            <div class="input-group"><label>Entry Price</label><input type="number" step="any" id="tEntry"></div>
+            <div class="input-group"><label>Stop Loss</label><input type="number" step="any" id="tSL"></div>
+            <div class="input-group"><label>Take Profit</label><input type="number" step="any" id="tTP"></div>
+            <div class="input-group"><label>Exit Price</label><input type="number" step="any" id="tExit"></div>
+            <div class="input-group"><label>Lot Size</label><input type="number" step="any" id="tLot"></div>
+            <div class="input-group"><label>Before Image</label><input type="file" id="imgBefore" accept="image/*"></div>
+            <div class="input-group"><label>After Image</label><input type="file" id="imgAfter" accept="image/*"></div>
+            <div class="input-group" style="grid-column: span 2;"><label>Logic / Notes</label><textarea id="tNotes" rows="1"></textarea></div>
+        </div>
+        <button class="btn-action" onclick="saveTradeToCloud()">Save Trade Entry</button>
+
+        <table style="margin-top:20px;">
+            <thead>
+                <tr><th>Date</th><th>Pair</th><th>Side</th><th>Entry</th><th>SL/TP</th><th>Lot</th><th>R:R</th><th>PnL ($)</th><th>Result</th><th>Before</th><th>After</th><th>Notes</th></tr>
+            </thead>
+            <tbody id="tradeTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- CALENDAR SHEET -->
+    <div id="calendarSheet" class="window-view">
+        <button class="btn-back" onclick="showHub()">← Back to Main Hub</button>
+        <h2>Interactive Date Search</h2>
+        <div class="calendar-grid" id="calendarDays"></div>
+        <h3>Trades for Selected Date</h3>
+        <table>
+            <thead><tr><th>Pair</th><th>Side</th><th>Entry</th><th>PnL ($)</th><th>Notes</th></tr></thead>
+            <tbody id="calTradesTable"></tbody>
+        </table>
+    </div>
+
+    <div id="reasonSummary" class="window-view">
+        <button class="btn-back" onclick="showHub()">← Back to Main Hub</button>
+        <h2>Reason & Model Performance Summary</h2>
+        <p>Dynamic setup statistics will be rendered here.</p>
+    </div>
+
+    <div id="dashboardSheet" class="window-view">
+        <button class="btn-back" onclick="showHub()">← Back to Main Hub</button>
+        <h2>Executive Dashboard</h2>
+        <p>Total Equity Growth and Drawdown metrics.</p>
+    </div>
+
+    <script>
+        function openWindow(id) {
+            document.querySelectorAll('.window-view').forEach(w => w.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'calendarSheet') renderCalendar();
+            if(id === 'tradeJournal') fetchCloudTrades();
+        }
+
+        function showHub() { openWindow('hubWindow'); }
+
+        const fileToBase64 = file => new Promise((resolve, reject) => {
+            if(!file) resolve("");
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        async function saveTradeToCloud() {
+            const date = document.getElementById('tDate').value;
+            const tf = document.getElementById('tTF').value;
+            const pair = document.getElementById('tPair').value;
+            const model = document.getElementById('tModel').value;
+            const side = document.getElementById('tSide').value;
+            const entry = parseFloat(document.getElementById('tEntry').value);
+            const sl = parseFloat(document.getElementById('tSL').value);
+            const tp = parseFloat(document.getElementById('tTP').value);
+            const exit = parseFloat(document.getElementById('tExit').value);
+            const lot = parseFloat(document.getElementById('tLot').value);
+            const notes = document.getElementById('tNotes').value;
+
+            const imgB = await fileToBase64(document.getElementById('imgBefore').files[0]);
+            const imgA = await fileToBase64(document.getElementById('imgAfter').files[0]);
+
+            if(!date || isNaN(entry) || isNaN(exit)) { alert("Please complete required input fields!"); return; }
+
+            let risk = side === "BUY" ? (entry - sl) : (sl - entry);
+            let reward = side === "BUY" ? (tp - entry) : (entry - tp);
+            let rr = (reward / risk).toFixed(2);
+
+            let mult = pair === "XAUUSD" ? 100 : (pair === "BTCUSD" ? 1 : 100000);
+            let pnl = side === "BUY" ? (exit - entry) * lot * mult : (entry - exit) * lot * mult;
+            let result = pnl > 0 ? "WIN" : (pnl < 0 ? "LOSS" : "BE");
+
+            const tradeData = { date, tf, pair, model, side, entry, sl, tp, exit, lot, rr, pnl, result, notes, imgB, imgA };
+
+            try {
+                await window.cloudAddDoc(window.cloudCollection(window.db, "trades"), tradeData);
+                alert("Trade entry saved to Google Cloud!");
+                fetchCloudTrades();
+            } catch(e) {
+                console.error("Error writing document: ", e);
+            }
+        }
+
+        async function fetchCloudTrades() {
+            if(!window.db) return;
+            const querySnapshot = await window.cloudGetDocs(window.cloudCollection(window.db, "trades"));
+            const trades = [];
+            querySnapshot.forEach((doc) => trades.push(doc.data()));
+            
+            const tbody = document.getElementById('tradeTableBody');
+            tbody.innerHTML = "";
+            trades.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.date}</td><td>${t.pair}</td><td><b>${t.side}</b></td><td>${t.entry}</td>
+                    <td>${t.sl}/${t.tp}</td><td>${t.lot}</td><td>1:${t.rr}</td>
+                    <td style="color:${t.pnl>=0?'var(--neon-green)':'var(--neon-red)'};">$${t.pnl.toFixed(2)}</td>
+                    <td>${t.result}</td>
+                    <td>${t.imgB ? `<img src="${t.imgB}" class="img-preview" onclick="window.open('${t.imgB}')">` : '-'}</td>
+                    <td>${t.imgA ? `<img src="${t.imgA}" class="img-preview" onclick="window.open('${t.imgA}')">` : '-'}</td>
+                    <td>${t.notes}</td>
+                </tr>`;
+            });
+            calculateHealthScore(trades);
+        }
+
+        function calculateHealthScore(trades) {
+            if(!trades.length) return;
+            const wins = trades.filter(t => t.result === "WIN").length;
+            const winRate = (wins / trades.length) * 100;
+            const netPnL = trades.reduce((a, t) => a + t.pnl, 0);
+            const avgRR = trades.reduce((a, t) => a + parseFloat(t.rr), 0) / trades.length;
+
+            let score = Math.round((winRate * 0.4) + Math.min(30, avgRR * 15) + (netPnL > 0 ? 20 : 0) + 10);
+            document.getElementById('healthScore').innerText = score;
+        }
+
+        function renderCalendar() {
+            const cal = document.getElementById('calendarDays');
+            cal.innerHTML = "";
+            for(let i=1; i<=30; i++) {
+                let dateStr = `2026-09-${i < 10 ? '0' + i : i}`;
+                cal.innerHTML += `<div class="cal-day" onclick="filterByDate('${dateStr}')">${i} Sep</div>`;
+            }
+        }
+
+        async function filterByDate(dateStr) {
+            const querySnapshot = await window.cloudGetDocs(window.cloudCollection(window.db, "trades"));
+            const tbody = document.getElementById('calTradesTable');
+            tbody.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const t = doc.data();
+                if(t.date === dateStr) {
+                    tbody.innerHTML += `<tr><td>${t.pair}</td><td>${t.side}</td><td>${t.entry}</td><td>$${t.pnl}</td><td>${t.notes}</td></tr>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
