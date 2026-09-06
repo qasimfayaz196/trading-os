@@ -72,13 +72,28 @@
   .tabpane.active{display:block;}
 
   /* Summary cards */
-  .cards{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-bottom:36px;}
-  .card{padding:20px 18px;border-right:1px solid var(--line);}
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);margin-bottom:36px;}
+  .card{padding:20px 18px;border-right:1px solid var(--line);position:relative;}
   .card:last-child{border-right:none;}
   .card .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;margin-bottom:8px;}
   .card .value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
   .card .value.pos{color:var(--win);}
   .card .value.neg{color:var(--loss);}
+  .edit-icon{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:2px 4px;line-height:1;}
+  .edit-icon:hover{color:var(--gold);}
+
+  /* Strategy switcher bar */
+  .strategy-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+  .strategy-bar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .strategy-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.03em;}
+  .icon-btn{background:none;border:1px solid var(--line);color:var(--text-dim);cursor:pointer;padding:7px 10px;font-size:12px;}
+  .icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+  #strategySelect{min-width:170px;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+  .modal-box{background:var(--panel);border:1px solid var(--gold-soft);padding:26px;width:340px;max-width:100%;}
+  .modal-box h3{margin:0 0 16px;font-size:16px;font-weight:600;}
 
   .panel{border:1px solid var(--line);background:var(--panel);padding:22px;margin-bottom:28px;}
   .panel h3{margin:0 0 16px;font-size:16px;font-weight:600;}
@@ -211,6 +226,16 @@
     </div>
   </header>
 
+  <div class="strategy-bar">
+    <div class="strategy-bar-left">
+      <span class="strategy-label">SHEET:</span>
+      <select id="strategySelect"></select>
+      <button class="icon-btn" id="renameStrategyBtn" title="Rename sheet">✏️</button>
+      <button class="icon-btn" id="deleteStrategyBtn" title="Delete sheet">🗑</button>
+    </div>
+    <button class="btn secondary" id="newStrategyBtn">+ New Sheet</button>
+  </div>
+
   <nav class="tabs">
     <button data-tab="dashboard" class="active">Dashboard</button>
     <button data-tab="addtrade">Add Trade</button>
@@ -218,27 +243,41 @@
     <button data-tab="reasons">Reason Summary</button>
   </nav>
 
+  <div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,.4);"></div>
+
+  <!-- MODAL: combined sheet name + starting balance (used for new sheet AND for setting/editing balance) -->
+  <div class="modal-overlay" id="sheetModalOverlay">
+    <div class="modal-box">
+      <h3 id="sheetModalTitle">New strategy sheet</h3>
+      <div class="field" style="margin-bottom:14px;">
+        <label>SHEET NAME</label>
+        <input type="text" id="sheetModalName" placeholder="e.g. Strategy A">
+      </div>
+      <div class="field">
+        <label>STARTING BALANCE (USD)</label>
+        <input type="number" id="sheetModalBalance" step="0.01" placeholder="e.g. 1000.00">
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="sheetModalSave">Save</button>
+        <button class="btn secondary" id="sheetModalCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- DASHBOARD -->
   <section class="tabpane active" id="pane-dashboard">
     <div class="cards">
       <div class="card"><div class="label">TOTAL TRADES</div><div class="value" id="d-total">0</div></div>
       <div class="card"><div class="label">WIN RATE</div><div class="value" id="d-winrate">0%</div></div>
       <div class="card"><div class="label">TOTAL NET P/L</div><div class="value" id="d-net">$0.00</div></div>
-      <div class="card"><div class="label">CURRENT BALANCE</div><div class="value" id="d-balance">$0.00</div></div>
-    </div>
-    <div class="panel">
-      <h3>Starting balance</h3>
-      <div class="row balance-edit">
-        <input type="number" id="startingBalanceInput" step="0.01" placeholder="e.g. 1000.00">
-        <button class="btn" id="saveBalanceBtn">Save</button>
-        <span id="balanceSavedMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--win);display:none;">Saved ✓</span>
+      <div class="card"><div class="label">STARTING BALANCE</div><div class="value" id="d-startbal">—</div>
       </div>
+      <div class="card"><div class="label">CURRENT BALANCE</div><div class="value" id="d-balance">$0.00</div></div>
     </div>
     <div class="panel">
       <h3 style="color:var(--loss);">Danger zone</h3>
       <div class="sub" style="margin-bottom:14px;">Permanently delete every trade in this journal — use this to start a fresh record (e.g. a new year). Your starting balance stays as-is; update it separately above if needed.</div>
       <button class="btn danger" id="resetAllBtn">Reset all trades</button>
-      <span id="resetMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--win);margin-left:10px;display:none;">All trades deleted ✓</span>
     </div>
   </section>
 
@@ -297,16 +336,6 @@
           <textarea id="f-rules"></textarea>
         </div>
         <div class="field">
-          <label>BEFORE — CHART SCREENSHOT (OPTIONAL)</label>
-          <input type="file" accept="image/*" id="f-before-file">
-          <img id="f-before-preview" style="display:none;max-width:100%;margin-top:8px;border:1px solid var(--line);">
-        </div>
-        <div class="field">
-          <label>AFTER — CHART SCREENSHOT (OPTIONAL)</label>
-          <input type="file" accept="image/*" id="f-after-file">
-          <img id="f-after-preview" style="display:none;max-width:100%;margin-top:8px;border:1px solid var(--line);">
-        </div>
-        <div class="field">
           <label>MISTAKE (OPTIONAL)</label>
           <textarea id="f-mistake"></textarea>
         </div>
@@ -342,7 +371,7 @@
           <tr>
             <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
             <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
-            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th>Before</th><th>After</th><th></th>
+            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th></th>
           </tr>
         </thead>
         <tbody id="historyBody"></tbody>
@@ -365,8 +394,9 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, setDoc, getDoc, writeBatch
+  getFirestore,
+  collection, addDoc, updateDoc, deleteDoc, doc,
+  onSnapshot, setDoc, getDoc, getDocs, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -381,59 +411,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const tradesCol = collection(db, "trades");
-const settingsRef = doc(db, "meta", "settings");
 
-/* ---------------- Image preview on file select ---------------- */
-function wireImagePreview(fileInputId, previewId){
-  const input = document.getElementById(fileInputId);
-  const preview = document.getElementById(previewId);
-  input.addEventListener("change", ()=>{
-    const file = input.files[0];
-    if (!file){ return; }
-    const reader = new FileReader();
-    reader.onload = e => { preview.src = e.target.result; preview.style.display = "block"; };
-    reader.readAsDataURL(file);
-  });
-}
-wireImagePreview("f-before-file","f-before-preview");
-wireImagePreview("f-after-file","f-after-preview");
+/* ---- Multi-strategy ("sheet") schema ----
+   strategies/{strategyId}                -> { name, startingBalance, order, createdAt }
+   strategies/{strategyId}/trades/{tradeId} -> same trade record as before
+   meta/appState                          -> { activeStrategyId }  (remembers last-used sheet across devices)
+   Legacy (pre-multi-sheet) data lived at top-level "trades" + "meta/settings";
+   it is migrated into a "Main" sheet automatically on first load. */
+const strategiesCol = collection(db, "strategies");
+const appStateRef = doc(db, "meta", "appState");
+const legacyTradesCol = collection(db, "trades");
+const legacySettingsRef = doc(db, "meta", "settings");
 
-/* Compresses an image file client-side and returns a base64 data URL,
-   so it can be stored directly inside the Firestore document (no paid Storage needed). */
-function compressImage(file, maxDim, quality){
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Could not read file"));
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onerror = () => reject(new Error("Could not read image"));
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > height){ if (width > maxDim){ height = Math.round(height * (maxDim/width)); width = maxDim; } }
-        else { if (height > maxDim){ width = Math.round(width * (maxDim/height)); height = maxDim; } }
-        const canvas = document.createElement("canvas");
-        canvas.width = width; canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-async function processImageForStorage(file){
-  if (!file) return null;
-  let quality = 0.6, maxDim = 900;
-  let dataUrl = await compressImage(file, maxDim, quality);
-  let attempts = 0;
-  while (dataUrl.length > 700000 && attempts < 4){
-    quality = Math.max(0.3, quality - 0.15);
-    maxDim = Math.max(500, maxDim - 150);
-    dataUrl = await compressImage(file, maxDim, quality);
-    attempts++;
-  }
-  return dataUrl;
+function tradesColFor(strategyId){ return collection(db, "strategies", strategyId, "trades"); }
+function tradeDocRef(id){ return doc(db, "strategies", currentStrategyId, "trades", id); }
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
 /* ---------------- Fixed option lists ---------------- */
@@ -491,6 +484,28 @@ function round2(n){ return Math.round(n*100)/100; }
 function fmtMoney(n){
   const sign = n < 0 ? "-" : (n > 0 ? "+" : "");
   return sign + "$" + Math.abs(n).toFixed(2);
+}
+
+/* ---------------- Toast notifications (clear success/error feedback) ---------------- */
+let toastTimer = null;
+function showToast(message, type){
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.style.background = type === "error" ? "#3a1c14" : "#1c3a2c";
+  el.style.color = type === "error" ? "#E48A6B" : "#6FCBA6";
+  el.style.border = "1px solid " + (type === "error" ? "#D2694A" : "#4FAE8E");
+  el.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.display = "none"; }, 3500);
+}
+
+/* Rejects if the given promise doesn't settle within `ms` milliseconds,
+   so the UI never gets stuck showing "Saving..." forever. */
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} took too long — check your internet connection.`)), ms))
+  ]);
 }
 
 /* ---------------- Searchable dropdown component ---------------- */
@@ -570,49 +585,217 @@ document.querySelectorAll("nav.tabs button").forEach(btn=>{
 });
 
 /* ---------------- State ---------------- */
-let trades = [];        // live array from Firestore
-let startingBalance = 0;
+let trades = [];             // live array from Firestore, for the ACTIVE strategy only
+let startingBalance = null;  // null = not set yet for this strategy
 let editingId = null;
+let strategies = [];         // all strategy sheets: {id,name,startingBalance,order,createdAt}
+let currentStrategyId = null;
+let tradesUnsub = null;      // detach fn for the previous strategy's trades listener
+let appReady = false;        // true once a real active sheet has loaded — guards buttons against the brief empty-first-snapshot window
 
-/* ---------------- Firestore: live trades ---------------- */
-onSnapshot(tradesCol, (snap)=>{
-  trades = [];
-  snap.forEach(d => trades.push({ id: d.id, ...d.data() }));
-  trades.sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
-  renderAll();
-});
+/* ---------------- One-time migration: legacy single-sheet data -> "Main" sheet ---------------- */
+async function ensureStrategiesExist(){
+  const existing = await getDocs(strategiesCol);
+  if (!existing.empty) return;
 
-/* ---------------- Firestore: settings/balance ---------------- */
-getDoc(settingsRef).then(snap=>{
-  if (snap.exists()){
-    startingBalance = snap.data().startingBalance || 0;
-    document.getElementById("startingBalanceInput").value = startingBalance;
-    renderDashboard();
+  const [legacyTradesSnap, legacySettingsSnap] = await Promise.all([
+    getDocs(legacyTradesCol),
+    getDoc(legacySettingsRef)
+  ]);
+  const legacyBalance = legacySettingsSnap.exists() ? (legacySettingsSnap.data().startingBalance ?? null) : null;
+
+  const newStrategyRef = await addDoc(strategiesCol, {
+    name: "Main",
+    startingBalance: legacyBalance,
+    order: 0,
+    createdAt: Date.now()
+  });
+
+  const copies = [];
+  legacyTradesSnap.forEach(d => {
+    copies.push(setDoc(doc(db, "strategies", newStrategyRef.id, "trades", d.id), d.data()));
+  });
+  await Promise.all(copies);
+  await setDoc(appStateRef, { activeStrategyId: newStrategyRef.id }, { merge: true });
+}
+
+/* ---------------- Strategy switcher ---------------- */
+function renderStrategySwitcher(){
+  const sel = document.getElementById("strategySelect");
+  if (!strategies.length){
+    sel.innerHTML = `<option value="">Loading…</option>`;
+    return;
   }
+  sel.innerHTML = strategies.map(s => `<option value="${s.id}">${escapeHtml(s.name || "Untitled")}</option>`).join("");
+  if (currentStrategyId) sel.value = currentStrategyId;
+}
+
+function switchStrategy(id){
+  if (!id || currentStrategyId === id) return;
+  currentStrategyId = id;
+  appReady = true;
+  setDoc(appStateRef, { activeStrategyId: id }, { merge: true }).catch(()=>{});
+
+  if (tradesUnsub) tradesUnsub();
+  const strat = strategies.find(s => s.id === id);
+  startingBalance = strat ? (strat.startingBalance ?? null) : null;
+  editingId = null;
+  document.getElementById("cancelEditBtn").style.display = "none";
+  document.getElementById("formTitle").textContent = "Add a new trade";
+  resetForm();
+  trades = [];
+  renderAll();
+  renderStrategySwitcher();
+
+  tradesUnsub = onSnapshot(tradesColFor(id), (snap)=>{
+    trades = [];
+    snap.forEach(d => trades.push({ id: d.id, ...d.data() }));
+    trades.sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+    renderAll();
+  });
+
+  maybePromptStartingBalance();
+}
+
+function maybePromptStartingBalance(){
+  if (startingBalance === null || startingBalance === undefined){
+    openSheetModal("edit");
+  }
+}
+
+async function initApp(){
+  try { await ensureStrategiesExist(); } catch(e){ showToast("✗ Setup error — " + e.message, "error"); }
+
+  onSnapshot(strategiesCol, (snap)=>{
+    strategies = [];
+    snap.forEach(d => strategies.push({ id: d.id, ...d.data() }));
+    strategies.sort((a,b) => (a.order??0)-(b.order??0) || (a.createdAt??0)-(b.createdAt??0));
+    renderStrategySwitcher();
+
+    if (!currentStrategyId || !strategies.find(s => s.id === currentStrategyId)){
+      getDoc(appStateRef).then(s=>{
+        const pref = s.exists() ? s.data().activeStrategyId : null;
+        const target = strategies.find(x => x.id === pref) ? pref : (strategies[0] && strategies[0].id);
+        if (target) switchStrategy(target);
+      });
+    } else {
+      const cur = strategies.find(s => s.id === currentStrategyId);
+      if (cur){ startingBalance = cur.startingBalance ?? null; renderDashboard(); }
+    }
+  });
+}
+
+document.getElementById("strategySelect").addEventListener("change", (e)=>{
+  switchStrategy(e.target.value);
 });
-document.getElementById("saveBalanceBtn").addEventListener("click", async ()=>{
-  const v = parseFloat(document.getElementById("startingBalanceInput").value) || 0;
-  await setDoc(settingsRef, { startingBalance: v }, { merge: true });
-  startingBalance = v;
-  renderDashboard();
-  const msg = document.getElementById("balanceSavedMsg");
-  msg.style.display = "inline";
-  setTimeout(()=>{ msg.style.display="none"; }, 1500);
+
+document.getElementById("newStrategyBtn").addEventListener("click", ()=>{
+  if (!appReady){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
+  openSheetModal("create");
+});
+document.getElementById("renameStrategyBtn").addEventListener("click", ()=>{
+  if (!appReady){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
+  openSheetModal("edit");
+});
+
+document.getElementById("deleteStrategyBtn").addEventListener("click", async ()=>{
+  if (!appReady){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
+  if (strategies.length <= 1){ showToast("At least one sheet must remain.", "error"); return; }
+  const cur = strategies.find(s => s.id === currentStrategyId);
+  if (!cur) return;
+  const ok = confirm(`Delete sheet "${cur.name}" and all its trades? This cannot be undone.`);
+  if (!ok) return;
+  try{
+    const snap = await getDocs(tradesColFor(cur.id));
+    const batch = writeBatch(db);
+    snap.forEach(d => batch.delete(d.ref));
+    await withTimeout(batch.commit(), 20000, "Deleting sheet's trades");
+    await deleteDoc(doc(db, "strategies", cur.id));
+    currentStrategyId = null; // strategiesCol listener will pick a new active sheet
+    showToast("✓ Sheet deleted", "success");
+  } catch(err){ showToast("✗ " + err.message, "error"); }
+});
+
+/* ---------------- Combined "sheet setup" modal: name + starting balance together ----------------
+   'create' -> blank fields, makes a brand-new sheet (name required, balance optional).
+   'edit'   -> pre-filled with the active sheet's current name + balance; used both for the
+               pencil icon on the Starting Balance card AND the rename icon next to the sheet
+               dropdown, and it's what auto-opens the first time a sheet has no balance set yet.
+   Either way, once saved both fields disappear again until the icon is clicked next time. */
+let sheetModalMode = null;
+function openSheetModal(mode){
+  sheetModalMode = mode;
+  const nameInput = document.getElementById("sheetModalName");
+  const balInput = document.getElementById("sheetModalBalance");
+  if (mode === "create"){
+    document.getElementById("sheetModalTitle").textContent = "New strategy sheet";
+    nameInput.value = "";
+    balInput.value = "";
+  } else {
+    const cur = strategies.find(s => s.id === currentStrategyId);
+    document.getElementById("sheetModalTitle").textContent = "Sheet settings";
+    nameInput.value = cur ? (cur.name || "") : "";
+    balInput.value = (startingBalance ?? "");
+  }
+  document.getElementById("sheetModalOverlay").style.display = "flex";
+  nameInput.focus();
+}
+document.getElementById("sheetModalCancel").addEventListener("click", ()=>{
+  document.getElementById("sheetModalOverlay").style.display = "none";
+});
+document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
+  const name = document.getElementById("sheetModalName").value.trim();
+  const balRaw = document.getElementById("sheetModalBalance").value;
+  const bal = balRaw === "" ? null : parseFloat(balRaw);
+
+  if (!name){ showToast("✗ Please enter a sheet name.", "error"); return; }
+  if (balRaw !== "" && isNaN(bal)){ showToast("✗ Please enter a valid balance.", "error"); return; }
+
+  document.getElementById("sheetModalOverlay").style.display = "none";
+
+  if (sheetModalMode === "create"){
+    const newOrder = strategies.length ? Math.max(...strategies.map(s=>s.order??0)) + 1 : 0;
+    const createdAt = Date.now();
+    try{
+      const ref = await addDoc(strategiesCol, { name, startingBalance: bal, order: newOrder, createdAt });
+      // optimistic — don't wait for the strategies onSnapshot to refire before switching to it
+      if (!strategies.find(s => s.id === ref.id)){
+        strategies.push({ id: ref.id, name, startingBalance: bal, order: newOrder, createdAt });
+      }
+      showToast("✓ Sheet created", "success");
+      switchStrategy(ref.id);
+    } catch(err){ showToast("✗ " + err.message, "error"); }
+  } else {
+    if (!currentStrategyId){ showToast("⏳ Still loading — please wait a moment and try again.", "error"); return; }
+    startingBalance = bal; // optimistic — instant dashboard update
+    const curEntry = strategies.find(s => s.id === currentStrategyId);
+    if (curEntry) curEntry.name = name; // optimistic — instant dropdown update
+    renderDashboard();
+    renderStrategySwitcher();
+    showToast("✓ Sheet updated", "success");
+    try{
+      await updateDoc(doc(db, "strategies", currentStrategyId), { name, startingBalance: bal });
+    } catch(err){ showToast("✗ " + err.message, "error"); }
+  }
 });
 
 document.getElementById("resetAllBtn").addEventListener("click", async ()=>{
-  if (!trades.length){ alert("There are no trades to delete."); return; }
-  const first = confirm(`This will permanently delete all ${trades.length} trades. This cannot be undone. Continue?`);
+  if (!trades.length){ showToast("There are no trades to delete.", "error"); return; }
+  const first = confirm(`This will permanently delete all ${trades.length} trades in this sheet. This cannot be undone. Continue?`);
   if (!first) return;
   const second = confirm("Are you absolutely sure? Type OK to permanently erase your trade history.");
   if (!second) return;
-  const batch = writeBatch(db);
-  trades.forEach(t => batch.delete(doc(db, "trades", t.id)));
-  await batch.commit();
-  const msg = document.getElementById("resetMsg");
-  msg.style.display = "inline";
-  setTimeout(()=>{ msg.style.display="none"; }, 2000);
+  try{
+    const batch = writeBatch(db);
+    trades.forEach(t => batch.delete(tradeDocRef(t.id)));
+    await withTimeout(batch.commit(), 20000, "Deleting trades");
+    showToast("✓ All trades deleted", "success");
+  } catch(err){
+    showToast("✗ " + err.message, "error");
+  }
 });
+
+initApp();
 
 /* ---------------- Add / Update trade ---------------- */
 document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
@@ -629,46 +812,47 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const reason = document.getElementById("f-reason").value.trim();
   const rules = document.getElementById("f-rules").value.trim();
   const mistake = document.getElementById("f-mistake").value.trim();
-  const beforeFile = document.getElementById("f-before-file").files[0] || null;
-  const afterFile = document.getElementById("f-after-file").files[0] || null;
 
   if (!date || !tf || !entrytf || !instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot < 0.01){
     msg.textContent = "Please fill date, timeframes, instrument, direction, entry, exit and a valid lot size (min 0.01).";
     return;
   }
+  if (!currentStrategyId){
+    msg.textContent = "No active sheet — please wait a moment and try again.";
+    return;
+  }
 
-  const submitBtn = document.getElementById("submitTradeBtn");
-  const originalLabel = submitBtn.textContent;
-  submitBtn.textContent = "Saving...";
-  submitBtn.disabled = true;
+  const record = {
+    date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
+    entry, exit, lot, commission: 0, swap: 0, reason,
+    rules, mistake,
+    createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
+  };
+  const wasEditing = !!editingId;
+  const editId = editingId;
+  const strategyIdAtSubmit = currentStrategyId;
 
-  let beforeImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.beforeImageUrl || null) : null;
-  let afterImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.afterImageUrl || null) : null;
+  /* Optimistic UI: Firestore's local cache already reflects this write
+     instantly (via onSnapshot) regardless of network round-trip time, so we
+     don't make the user wait on a round-trip before confirming success.
+     A real failure (offline write rejected, permission error, etc.) still
+     surfaces its own error toast below — this never silently swallows one. */
+  resetForm();
+  if (wasEditing){
+    editingId = null;
+    document.getElementById("cancelEditBtn").style.display = "none";
+    document.getElementById("formTitle").textContent = "Add a new trade";
+  }
+  showToast(wasEditing ? "✓ Trade updated" : "✓ Trade saved", "success");
+
   try{
-    if (beforeFile) beforeImageUrl = await processImageForStorage(beforeFile);
-    if (afterFile) afterImageUrl = await processImageForStorage(afterFile);
-
-    const record = {
-      date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
-      entry, exit, lot, commission: 0, swap: 0, reason,
-      rules, beforeImageUrl, afterImageUrl, mistake,
-      createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
-    };
-
-    if (editingId){
-      await updateDoc(doc(db,"trades",editingId), record);
-      editingId = null;
-      document.getElementById("cancelEditBtn").style.display = "none";
-      document.getElementById("formTitle").textContent = "Add a new trade";
+    if (wasEditing){
+      await updateDoc(tradeDocRef(editId), record);
     } else {
-      await addDoc(tradesCol, record);
+      await addDoc(tradesColFor(strategyIdAtSubmit), record);
     }
-    resetForm();
   } catch(err){
-    msg.textContent = "Save failed: " + err.message;
-  } finally {
-    submitBtn.textContent = originalLabel;
-    submitBtn.disabled = false;
+    showToast("✗ Save failed — " + err.message, "error");
   }
 });
 
@@ -680,11 +864,9 @@ document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
 });
 
 function resetForm(){
-  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-rules","f-mistake","f-reason","f-before-file","f-after-file"]
+  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-rules","f-mistake","f-reason"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("f-lot").value = "0.01";
-  document.getElementById("f-before-preview").style.display = "none";
-  document.getElementById("f-after-preview").style.display = "none";
   document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
   selectedDir = "";
   document.getElementById("formMsg").textContent = "";
@@ -705,12 +887,6 @@ function startEdit(t){
   document.getElementById("f-reason").value = t.reason || "";
   document.getElementById("f-rules").value = t.rules || "";
   document.getElementById("f-mistake").value = t.mistake || "";
-  document.getElementById("f-before-file").value = "";
-  document.getElementById("f-after-file").value = "";
-  const beforePrev = document.getElementById("f-before-preview");
-  const afterPrev = document.getElementById("f-after-preview");
-  if (t.beforeImageUrl){ beforePrev.src = t.beforeImageUrl; beforePrev.style.display = "block"; } else { beforePrev.style.display = "none"; }
-  if (t.afterImageUrl){ afterPrev.src = t.afterImageUrl; afterPrev.style.display = "block"; } else { afterPrev.style.display = "none"; }
   document.querySelectorAll(".dir-btn").forEach(b=>{
     b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
   });
@@ -722,7 +898,13 @@ function startEdit(t){
 
 async function deleteTrade(id){
   if (!confirm("Delete this trade? This cannot be undone.")) return;
-  await deleteDoc(doc(db,"trades",id));
+  trades = trades.filter(t => t.id !== id); // optimistic — instant table update
+  renderAll();
+  try{
+    await deleteDoc(tradeDocRef(id));
+  } catch(err){
+    showToast("✗ Delete failed — " + err.message, "error");
+  }
 }
 
 /* ---------------- Render: Dashboard ---------------- */
@@ -731,13 +913,16 @@ function renderDashboard(){
   const wins = trades.filter(t => calcTrade(t).result === "Win").length;
   const netSum = trades.reduce((s,t) => s + calcTrade(t).net, 0);
   const winRate = total ? Math.round((wins/total)*1000)/10 : 0;
-  const balance = startingBalance + netSum;
+  const sb = startingBalance ?? 0;
+  const balance = sb + netSum;
 
   document.getElementById("d-total").textContent = total;
   document.getElementById("d-winrate").textContent = winRate + "%";
   const netEl = document.getElementById("d-net");
   netEl.textContent = fmtMoney(round2(netSum));
   netEl.className = "value " + (netSum > 0 ? "pos" : (netSum < 0 ? "neg" : ""));
+  document.getElementById("d-startbal").textContent =
+    (startingBalance === null || startingBalance === undefined) ? "Not set" : "$" + round2(startingBalance).toFixed(2);
   document.getElementById("d-balance").textContent = "$" + round2(balance).toFixed(2);
 }
 
@@ -809,8 +994,6 @@ function renderHistory(){
       <td class="num net ${c.net>0?'pos':(c.net<0?'neg':'zero')}">${fmtMoney(c.net)}</td>
       <td><span class="badge ${c.result==='Win'?'win':(c.result==='Loss'?'loss':'be')}">${c.result}</span></td>
       <td>${t.reason||"—"}</td>
-      <td>${t.beforeImageUrl ? `<a href="${t.beforeImageUrl}" target="_blank"><img class="thumb" src="${t.beforeImageUrl}"></a>` : "—"}</td>
-      <td>${t.afterImageUrl ? `<a href="${t.afterImageUrl}" target="_blank"><img class="thumb" src="${t.afterImageUrl}"></a>` : "—"}</td>
       <td><button class="rowbtn edit">Edit</button><button class="rowbtn del">Delete</button></td>
     `;
     tr.querySelector(".edit").addEventListener("click", ()=>startEdit(t));
