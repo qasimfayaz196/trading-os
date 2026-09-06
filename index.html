@@ -114,6 +114,25 @@
     outline:none;
   }
   input:focus,textarea:focus{border-color:var(--gold);}
+  input[type=file]{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    padding:8px;
+  }
+  input[type=file]::file-selector-button{
+    background:var(--gold);
+    color:#12141A;
+    border:none;
+    padding:6px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    cursor:pointer;
+    margin-right:10px;
+  }
+  .thumb{width:44px;height:44px;object-fit:cover;border:1px solid var(--line);cursor:pointer;display:block;}
   textarea{font-family:'Spectral',serif;resize:vertical;min-height:44px;}
   .dropdown-list{
     position:absolute;top:100%;left:0;right:0;z-index:20;
@@ -215,6 +234,12 @@
         <span id="balanceSavedMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--win);display:none;">Saved ✓</span>
       </div>
     </div>
+    <div class="panel">
+      <h3 style="color:var(--loss);">Danger zone</h3>
+      <div class="sub" style="margin-bottom:14px;">Permanently delete every trade in this journal — use this to start a fresh record (e.g. a new year). Your starting balance stays as-is; update it separately above if needed.</div>
+      <button class="btn danger" id="resetAllBtn">Reset all trades</button>
+      <span id="resetMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--win);margin-left:10px;display:none;">All trades deleted ✓</span>
+    </div>
   </section>
 
   <!-- ADD TRADE -->
@@ -284,12 +309,14 @@
           <textarea id="f-rules"></textarea>
         </div>
         <div class="field">
-          <label>BEFORE (OPTIONAL)</label>
-          <textarea id="f-before"></textarea>
+          <label>BEFORE — CHART SCREENSHOT (OPTIONAL)</label>
+          <input type="file" accept="image/*" id="f-before-file">
+          <img id="f-before-preview" style="display:none;max-width:100%;margin-top:8px;border:1px solid var(--line);">
         </div>
         <div class="field">
-          <label>AFTER (OPTIONAL)</label>
-          <textarea id="f-after"></textarea>
+          <label>AFTER — CHART SCREENSHOT (OPTIONAL)</label>
+          <input type="file" accept="image/*" id="f-after-file">
+          <img id="f-after-preview" style="display:none;max-width:100%;margin-top:8px;border:1px solid var(--line);">
         </div>
         <div class="field">
           <label>MISTAKE (OPTIONAL)</label>
@@ -319,7 +346,7 @@
           <tr>
             <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
             <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
-            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th></th>
+            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th>Before</th><th>After</th><th></th>
           </tr>
         </thead>
         <tbody id="historyBody"></tbody>
@@ -343,8 +370,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, setDoc, getDoc
+  onSnapshot, setDoc, getDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHZk_0J62Xs3r6zzgawtcy65QDprrDotA",
@@ -358,8 +388,33 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const tradesCol = collection(db, "trades");
 const settingsRef = doc(db, "meta", "settings");
+
+/* ---------------- Image preview on file select ---------------- */
+function wireImagePreview(fileInputId, previewId){
+  const input = document.getElementById(fileInputId);
+  const preview = document.getElementById(previewId);
+  input.addEventListener("change", ()=>{
+    const file = input.files[0];
+    if (!file){ return; }
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display = "block"; };
+    reader.readAsDataURL(file);
+  });
+}
+wireImagePreview("f-before-file","f-before-preview");
+wireImagePreview("f-after-file","f-after-preview");
+
+/* Uploads a file (if provided) to Firebase Storage and returns its download URL */
+async function uploadTradeImage(file, label){
+  if (!file) return null;
+  const path = `trade-images/${Date.now()}_${label}_${file.name}`;
+  const ref = storageRef(storage, path);
+  await uploadBytes(ref, file);
+  return await getDownloadURL(ref);
+}
 
 /* ---------------- Fixed option lists ---------------- */
 const TIMEFRAMES = ["1m","3m","5m","15m","30m","1h","2h","4h","1d","1w","1month","3month"];
@@ -493,6 +548,20 @@ document.getElementById("saveBalanceBtn").addEventListener("click", async ()=>{
   setTimeout(()=>{ msg.style.display="none"; }, 1500);
 });
 
+document.getElementById("resetAllBtn").addEventListener("click", async ()=>{
+  if (!trades.length){ alert("There are no trades to delete."); return; }
+  const first = confirm(`This will permanently delete all ${trades.length} trades. This cannot be undone. Continue?`);
+  if (!first) return;
+  const second = confirm("Are you absolutely sure? Type OK to permanently erase your trade history.");
+  if (!second) return;
+  const batch = writeBatch(db);
+  trades.forEach(t => batch.delete(doc(db, "trades", t.id)));
+  await batch.commit();
+  const msg = document.getElementById("resetMsg");
+  msg.style.display = "inline";
+  setTimeout(()=>{ msg.style.display="none"; }, 2000);
+});
+
 /* ---------------- Add / Update trade ---------------- */
 document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const msg = document.getElementById("formMsg");
@@ -510,19 +579,36 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const swap = parseFloat(document.getElementById("f-swap").value) || 0;
   const reason = document.getElementById("f-reason").value.trim();
   const rules = document.getElementById("f-rules").value.trim();
-  const before = document.getElementById("f-before").value.trim();
-  const after = document.getElementById("f-after").value.trim();
   const mistake = document.getElementById("f-mistake").value.trim();
+  const beforeFile = document.getElementById("f-before-file").files[0] || null;
+  const afterFile = document.getElementById("f-after-file").files[0] || null;
 
   if (!date || !tf || !entrytf || !instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot < 0.01){
     msg.textContent = "Please fill date, timeframes, instrument, direction, entry, exit and a valid lot size (min 0.01).";
     return;
   }
 
+  const submitBtn = document.getElementById("submitTradeBtn");
+  const originalLabel = submitBtn.textContent;
+  submitBtn.textContent = "Uploading...";
+  submitBtn.disabled = true;
+
+  let beforeImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.beforeImageUrl || null) : null;
+  let afterImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.afterImageUrl || null) : null;
+  try{
+    if (beforeFile) beforeImageUrl = await uploadTradeImage(beforeFile, "before");
+    if (afterFile) afterImageUrl = await uploadTradeImage(afterFile, "after");
+  } catch(err){
+    msg.textContent = "Image upload failed: " + err.message;
+    submitBtn.textContent = originalLabel;
+    submitBtn.disabled = false;
+    return;
+  }
+
   const record = {
     date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
     entry, exit, lot, stopLoss: sl, commission: comm, swap, reason,
-    rules, before, after, mistake,
+    rules, beforeImageUrl, afterImageUrl, mistake,
     createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
   };
 
@@ -534,6 +620,8 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   } else {
     await addDoc(tradesCol, record);
   }
+  submitBtn.textContent = originalLabel;
+  submitBtn.disabled = false;
   resetForm();
 });
 
@@ -545,11 +633,13 @@ document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
 });
 
 function resetForm(){
-  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-sl","f-rules","f-before","f-after","f-mistake","f-reason"]
+  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-sl","f-rules","f-mistake","f-reason","f-before-file","f-after-file"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("f-lot").value = "0.01";
   document.getElementById("f-comm").value = "0";
   document.getElementById("f-swap").value = "0";
+  document.getElementById("f-before-preview").style.display = "none";
+  document.getElementById("f-after-preview").style.display = "none";
   document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
   selectedDir = "";
   document.getElementById("formMsg").textContent = "";
@@ -571,9 +661,13 @@ function startEdit(t){
   document.getElementById("f-swap").value = t.swap ?? "0";
   document.getElementById("f-reason").value = t.reason || "";
   document.getElementById("f-rules").value = t.rules || "";
-  document.getElementById("f-before").value = t.before || "";
-  document.getElementById("f-after").value = t.after || "";
   document.getElementById("f-mistake").value = t.mistake || "";
+  document.getElementById("f-before-file").value = "";
+  document.getElementById("f-after-file").value = "";
+  const beforePrev = document.getElementById("f-before-preview");
+  const afterPrev = document.getElementById("f-after-preview");
+  if (t.beforeImageUrl){ beforePrev.src = t.beforeImageUrl; beforePrev.style.display = "block"; } else { beforePrev.style.display = "none"; }
+  if (t.afterImageUrl){ afterPrev.src = t.afterImageUrl; afterPrev.style.display = "block"; } else { afterPrev.style.display = "none"; }
   document.querySelectorAll(".dir-btn").forEach(b=>{
     b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
   });
@@ -671,6 +765,8 @@ function renderHistory(){
       <td class="num net ${c.net>0?'pos':(c.net<0?'neg':'zero')}">${fmtMoney(c.net)}</td>
       <td><span class="badge ${c.result==='Win'?'win':(c.result==='Loss'?'loss':'be')}">${c.result}</span></td>
       <td>${t.reason||"—"}</td>
+      <td>${t.beforeImageUrl ? `<a href="${t.beforeImageUrl}" target="_blank"><img class="thumb" src="${t.beforeImageUrl}"></a>` : "—"}</td>
+      <td>${t.afterImageUrl ? `<a href="${t.afterImageUrl}" target="_blank"><img class="thumb" src="${t.afterImageUrl}"></a>` : "—"}</td>
       <td><button class="rowbtn edit">Edit</button><button class="rowbtn del">Delete</button></td>
     `;
     tr.querySelector(".edit").addEventListener("click", ()=>startEdit(t));
