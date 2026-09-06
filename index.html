@@ -286,18 +286,6 @@
           <input type="number" id="f-lot" step="0.01" min="0.01" value="0.01">
         </div>
         <div class="field">
-          <label>STOP LOSS (PRICE)</label>
-          <input type="number" id="f-sl" step="any">
-        </div>
-        <div class="field">
-          <label>COMMISSION (USD)</label>
-          <input type="number" id="f-comm" step="any" value="0">
-        </div>
-        <div class="field">
-          <label>SWAP (USD)</label>
-          <input type="number" id="f-swap" step="any" value="0">
-        </div>
-        <div class="field">
           <label>REASON OF TRADE</label>
           <div class="searchbox"><input type="text" id="f-reason" autocomplete="off" placeholder="e.g. SBT 3"></div>
           <div class="dropdown-list" id="dd-reason"></div>
@@ -321,6 +309,14 @@
         <div class="field">
           <label>MISTAKE (OPTIONAL)</label>
           <textarea id="f-mistake"></textarea>
+        </div>
+      </div>
+      <div class="panel" id="livePreview" style="background:var(--panel-2);margin-top:18px;margin-bottom:0;display:none;">
+        <h3 style="margin-bottom:10px;font-size:13px;color:var(--gold);">Estimated result</h3>
+        <div class="row" style="gap:24px;">
+          <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);">PIPS</span><br><span id="preview-pips" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">—</span></div>
+          <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);">PROFIT / LOSS</span><br><span id="preview-net" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">—</span></div>
+          <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);">RESULT</span><br><span id="preview-result" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">—</span></div>
         </div>
       </div>
       <div class="form-actions">
@@ -372,9 +368,6 @@ import {
   getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, setDoc, getDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHZk_0J62Xs3r6zzgawtcy65QDprrDotA",
@@ -388,7 +381,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const tradesCol = collection(db, "trades");
 const settingsRef = doc(db, "meta", "settings");
 
@@ -407,13 +399,41 @@ function wireImagePreview(fileInputId, previewId){
 wireImagePreview("f-before-file","f-before-preview");
 wireImagePreview("f-after-file","f-after-preview");
 
-/* Uploads a file (if provided) to Firebase Storage and returns its download URL */
-async function uploadTradeImage(file, label){
+/* Compresses an image file client-side and returns a base64 data URL,
+   so it can be stored directly inside the Firestore document (no paid Storage needed). */
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Could not read image"));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height){ if (width > maxDim){ height = Math.round(height * (maxDim/width)); width = maxDim; } }
+        else { if (height > maxDim){ width = Math.round(width * (maxDim/height)); height = maxDim; } }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function processImageForStorage(file){
   if (!file) return null;
-  const path = `trade-images/${Date.now()}_${label}_${file.name}`;
-  const ref = storageRef(storage, path);
-  await uploadBytes(ref, file);
-  return await getDownloadURL(ref);
+  let quality = 0.6, maxDim = 900;
+  let dataUrl = await compressImage(file, maxDim, quality);
+  let attempts = 0;
+  while (dataUrl.length > 700000 && attempts < 4){
+    quality = Math.max(0.3, quality - 0.15);
+    maxDim = Math.max(500, maxDim - 150);
+    dataUrl = await compressImage(file, maxDim, quality);
+    attempts++;
+  }
+  return dataUrl;
 }
 
 /* ---------------- Fixed option lists ---------------- */
@@ -504,7 +524,34 @@ document.querySelectorAll(".dir-btn").forEach(btn=>{
     document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
     btn.classList.add("sel");
     selectedDir = btn.getAttribute("data-dir");
+    updateLivePreview();
   });
+});
+
+/* ---------------- Live P&L preview while filling the form ---------------- */
+function updateLivePreview(){
+  const box = document.getElementById("livePreview");
+  const instrument = document.getElementById("f-instrument").value.trim().toUpperCase();
+  const entry = parseFloat(document.getElementById("f-entry").value);
+  const exit = parseFloat(document.getElementById("f-exit").value);
+  const lot = parseFloat(document.getElementById("f-lot").value);
+
+  if (!instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot <= 0){
+    box.style.display = "none";
+    return;
+  }
+  const c = calcTrade({ instrument, direction: selectedDir, entry, exit, lot, commission:0, swap:0 });
+  box.style.display = "block";
+  document.getElementById("preview-pips").textContent = c.pips;
+  const netEl = document.getElementById("preview-net");
+  netEl.textContent = fmtMoney(c.net);
+  netEl.style.color = c.net > 0 ? "var(--win)" : (c.net < 0 ? "var(--loss)" : "var(--text-dim)");
+  const resEl = document.getElementById("preview-result");
+  resEl.textContent = c.result;
+  resEl.style.color = c.result === "Win" ? "var(--win)" : (c.result === "Loss" ? "var(--loss)" : "var(--be)");
+}
+["f-instrument","f-entry","f-exit","f-lot"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", updateLivePreview);
 });
 
 /* ---------------- Tabs ---------------- */
@@ -574,9 +621,6 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const entry = parseFloat(document.getElementById("f-entry").value);
   const exit = parseFloat(document.getElementById("f-exit").value);
   const lot = parseFloat(document.getElementById("f-lot").value);
-  const sl = parseFloat(document.getElementById("f-sl").value) || null;
-  const comm = parseFloat(document.getElementById("f-comm").value) || 0;
-  const swap = parseFloat(document.getElementById("f-swap").value) || 0;
   const reason = document.getElementById("f-reason").value.trim();
   const rules = document.getElementById("f-rules").value.trim();
   const mistake = document.getElementById("f-mistake").value.trim();
@@ -590,39 +634,37 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
 
   const submitBtn = document.getElementById("submitTradeBtn");
   const originalLabel = submitBtn.textContent;
-  submitBtn.textContent = "Uploading...";
+  submitBtn.textContent = "Saving...";
   submitBtn.disabled = true;
 
   let beforeImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.beforeImageUrl || null) : null;
   let afterImageUrl = editingId ? (trades.find(t=>t.id===editingId)?.afterImageUrl || null) : null;
   try{
-    if (beforeFile) beforeImageUrl = await uploadTradeImage(beforeFile, "before");
-    if (afterFile) afterImageUrl = await uploadTradeImage(afterFile, "after");
+    if (beforeFile) beforeImageUrl = await processImageForStorage(beforeFile);
+    if (afterFile) afterImageUrl = await processImageForStorage(afterFile);
+
+    const record = {
+      date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
+      entry, exit, lot, commission: 0, swap: 0, reason,
+      rules, beforeImageUrl, afterImageUrl, mistake,
+      createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
+    };
+
+    if (editingId){
+      await updateDoc(doc(db,"trades",editingId), record);
+      editingId = null;
+      document.getElementById("cancelEditBtn").style.display = "none";
+      document.getElementById("formTitle").textContent = "Add a new trade";
+    } else {
+      await addDoc(tradesCol, record);
+    }
+    resetForm();
   } catch(err){
-    msg.textContent = "Image upload failed: " + err.message;
+    msg.textContent = "Save failed: " + err.message;
+  } finally {
     submitBtn.textContent = originalLabel;
     submitBtn.disabled = false;
-    return;
   }
-
-  const record = {
-    date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
-    entry, exit, lot, stopLoss: sl, commission: comm, swap, reason,
-    rules, beforeImageUrl, afterImageUrl, mistake,
-    createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
-  };
-
-  if (editingId){
-    await updateDoc(doc(db,"trades",editingId), record);
-    editingId = null;
-    document.getElementById("cancelEditBtn").style.display = "none";
-    document.getElementById("formTitle").textContent = "Add a new trade";
-  } else {
-    await addDoc(tradesCol, record);
-  }
-  submitBtn.textContent = originalLabel;
-  submitBtn.disabled = false;
-  resetForm();
 });
 
 document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
@@ -633,16 +675,15 @@ document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
 });
 
 function resetForm(){
-  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-sl","f-rules","f-mistake","f-reason","f-before-file","f-after-file"]
+  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-rules","f-mistake","f-reason","f-before-file","f-after-file"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("f-lot").value = "0.01";
-  document.getElementById("f-comm").value = "0";
-  document.getElementById("f-swap").value = "0";
   document.getElementById("f-before-preview").style.display = "none";
   document.getElementById("f-after-preview").style.display = "none";
   document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
   selectedDir = "";
   document.getElementById("formMsg").textContent = "";
+  updateLivePreview();
 }
 
 function startEdit(t){
@@ -656,9 +697,6 @@ function startEdit(t){
   document.getElementById("f-entry").value = t.entry ?? "";
   document.getElementById("f-exit").value = t.exit ?? "";
   document.getElementById("f-lot").value = t.lot ?? "0.01";
-  document.getElementById("f-sl").value = t.stopLoss ?? "";
-  document.getElementById("f-comm").value = t.commission ?? "0";
-  document.getElementById("f-swap").value = t.swap ?? "0";
   document.getElementById("f-reason").value = t.reason || "";
   document.getElementById("f-rules").value = t.rules || "";
   document.getElementById("f-mistake").value = t.mistake || "";
@@ -672,6 +710,7 @@ function startEdit(t){
     b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
   });
   selectedDir = t.direction || "";
+  updateLivePreview();
   document.querySelector('[data-tab="addtrade"]').click();
   window.scrollTo({top:0, behavior:"smooth"});
 }
