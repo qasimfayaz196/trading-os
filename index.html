@@ -1,458 +1,725 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero-Tolerance Trading Journal OS</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #070a12; color: #e2e8f0; font-family: 'Inter', sans-serif; }
-        .cyber-card { background: rgba(13, 19, 33, 0.95); border: 1px solid rgba(59, 130, 246, 0.25); position: relative; border-radius: 0.75rem; }
-        .cyber-card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px; border-top: 2px solid #3b82f6; border-left: 2px solid #3b82f6; }
-        .cyber-card::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-bottom: 2px solid #3b82f6; border-right: 2px solid #3b82f6; }
-        .custom-input { background: #111827; border: 1px solid #1f293d; color: #ffffff; padding: 0.5rem 0.75rem; border-radius: 0.375rem; width: 100%; outline: none; font-size: 0.875rem; }
-        .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); }
-    </style>
+<meta charset="UTF-8">
+<title>My Trading OS — Journal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141A;
+    --panel:#181B23;
+    --panel-2:#1D212B;
+    --line:#2B2F3A;
+    --line-soft:#22252E;
+    --text:#E7E4DC;
+    --text-dim:#9B9DA6;
+    --gold:#C9A24B;
+    --gold-soft:#8A733A;
+    --win:#4FAE8E;
+    --loss:#D2694A;
+    --be:#B7A15C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Spectral',serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 90px;}
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--line);
+    padding-bottom:24px;
+    margin-bottom:24px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .mark{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;}
+  h1{font-size:32px;font-weight:600;margin:0;letter-spacing:-0.01em;}
+  .sub{font-size:14px;color:var(--text-dim);margin-top:6px;max-width:46ch;line-height:1.5;}
+
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:32px;
+    flex-wrap:wrap;
+  }
+  nav.tabs button{
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:.03em;
+    padding:12px 18px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:color .15s, border-color .15s;
+  }
+  nav.tabs button:hover{color:var(--text);}
+  nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+  .tabpane{display:none;}
+  .tabpane.active{display:block;}
+
+  /* Summary cards */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-bottom:36px;}
+  .card{padding:20px 18px;border-right:1px solid var(--line);}
+  .card:last-child{border-right:none;}
+  .card .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;margin-bottom:8px;}
+  .card .value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
+  .card .value.pos{color:var(--win);}
+  .card .value.neg{color:var(--loss);}
+
+  .panel{border:1px solid var(--line);background:var(--panel);padding:22px;margin-bottom:28px;}
+  .panel h3{margin:0 0 16px;font-size:16px;font-weight:600;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .balance-edit input{width:140px;}
+  button.btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:var(--gold);
+    color:#12141A;
+    border:none;
+    padding:9px 16px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  button.btn:hover{background:#dab35c;}
+  button.btn.secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
+  button.btn.secondary:hover{border-color:var(--gold);color:var(--gold);}
+  button.btn.danger{background:transparent;border:1px solid var(--loss);color:var(--loss);}
+  button.btn.danger:hover{background:var(--loss);color:#12141A;}
+
+  /* Form */
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .field{display:flex;flex-direction:column;gap:6px;position:relative;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;}
+  input[type=text],input[type=number],input[type=date],textarea,.searchbox input{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:9px 10px;
+    outline:none;
+  }
+  input:focus,textarea:focus{border-color:var(--gold);}
+  textarea{font-family:'Spectral',serif;resize:vertical;min-height:44px;}
+  .dropdown-list{
+    position:absolute;top:100%;left:0;right:0;z-index:20;
+    background:var(--panel-2);border:1px solid var(--gold-soft);
+    max-height:180px;overflow-y:auto;display:none;
+  }
+  .dropdown-list div{padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer;}
+  .dropdown-list div:hover{background:rgba(201,162,75,0.15);color:var(--gold);}
+  .dir-toggle{display:flex;gap:8px;}
+  .dir-btn{flex:1;padding:9px 10px;text-align:center;border:1px solid var(--line);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);}
+  .dir-btn.buy.sel{background:rgba(79,174,142,.15);border-color:var(--win);color:var(--win);}
+  .dir-btn.sell.sel{background:rgba(210,105,74,.15);border-color:var(--loss);color:var(--loss);}
+  .form-actions{margin-top:20px;display:flex;gap:10px;}
+
+  /* Filters */
+  .filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  select{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:8px 10px;
+  }
+  .filter-summary{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);
+    margin-bottom:18px;padding:10px 14px;border:1px solid var(--line-soft);background:var(--panel-2);
+  }
+  .filter-summary b{color:var(--text);}
+  .filter-summary .pos{color:var(--win);}
+  .filter-summary .neg{color:var(--loss);}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  thead th{text-align:left;font-weight:500;color:var(--text-dim);font-size:10px;letter-spacing:.03em;padding:0 8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody td{padding:11px 8px;border-bottom:1px solid var(--line-soft);white-space:nowrap;vertical-align:middle;}
+  tbody tr:hover{background:rgba(201,162,75,0.04);}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  td.dir-sell{color:var(--loss);}
+  td.dir-buy{color:var(--win);}
+  .badge{display:inline-block;padding:3px 8px;border-radius:2px;font-size:10px;}
+  .badge.win{background:rgba(79,174,142,0.14);color:var(--win);}
+  .badge.loss{background:rgba(210,105,74,0.14);color:var(--loss);}
+  .badge.be{background:rgba(183,161,92,0.16);color:var(--be);}
+  .net.pos{color:var(--win);}
+  .net.neg{color:var(--loss);}
+  .net.zero{color:var(--text-dim);}
+  .rowbtn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;text-decoration:underline;padding:0;margin-right:10px;}
+  .rowbtn:hover{color:var(--gold);}
+  .rowbtn.del:hover{color:var(--loss);}
+  .empty{color:var(--text-dim);font-size:13px;padding:30px 0;text-align:center;}
+
+  /* Reason bars */
+  .reason-row{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .reason-row .name{color:var(--text);}
+  .bar-track{background:var(--line-soft);height:10px;position:relative;}
+  .bar-fill{position:absolute;top:0;bottom:0;left:0;}
+  .bar-fill.pos{background:var(--win);}
+  .bar-fill.neg{background:var(--loss);}
+  .reason-net{text-align:right;}
+  .reason-meta{font-size:10px;color:var(--text-dim);margin-top:2px;}
+
+  footer{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);}
+
+  @media (max-width:760px){
+    .cards{grid-template-columns:repeat(2,1fr);}
+    .form-grid{grid-template-columns:1fr 1fr;}
+    table{font-size:10.5px;}
+  }
+</style>
 </head>
-<body class="min-h-screen pb-12">
+<body>
+<div class="wrap">
 
-    <!-- Header Navigation -->
-    <header class="cyber-card sticky top-0 z-50 px-6 py-4 mb-6 mx-4 mt-4 flex justify-between items-center flex-wrap gap-4">
-        <div class="flex items-center space-x-3">
-            <div class="h-3 w-3 rounded-full bg-cyan-400 animate-ping"></div>
-            <h1 class="text-xl font-black tracking-widest text-white">TRADING JOURNAL <span class="text-blue-500">OS</span></h1>
+  <header>
+    <div>
+      <div class="mark">MY TRADING OS</div>
+      <h1>Trading Journal</h1>
+      <div class="sub">Every entry, exit and the reasoning behind it — synced live to your account.</div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="addtrade">Add Trade</button>
+    <button data-tab="history">Trade History</button>
+    <button data-tab="reasons">Reason Summary</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="tabpane active" id="pane-dashboard">
+    <div class="cards">
+      <div class="card"><div class="label">TOTAL TRADES</div><div class="value" id="d-total">0</div></div>
+      <div class="card"><div class="label">WIN RATE</div><div class="value" id="d-winrate">0%</div></div>
+      <div class="card"><div class="label">TOTAL NET P/L</div><div class="value" id="d-net">$0.00</div></div>
+      <div class="card"><div class="label">CURRENT BALANCE</div><div class="value" id="d-balance">$0.00</div></div>
+    </div>
+    <div class="panel">
+      <h3>Starting balance</h3>
+      <div class="row balance-edit">
+        <input type="number" id="startingBalanceInput" step="0.01" placeholder="e.g. 1000.00">
+        <button class="btn" id="saveBalanceBtn">Save</button>
+        <span id="balanceSavedMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--win);display:none;">Saved ✓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADD TRADE -->
+  <section class="tabpane" id="pane-addtrade">
+    <div class="panel">
+      <h3 id="formTitle">Add a new trade</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>DATE</label>
+          <input type="date" id="f-date">
         </div>
-        <nav class="flex flex-wrap gap-2">
-            <button onclick="switchTab('sheet1')" id="tab-sheet1" class="px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white transition tracking-wider">Sheet 1: Main Command</button>
-            <button onclick="switchTab('sheet2')" id="tab-sheet2" class="px-3 py-1.5 rounded text-xs font-bold bg-gray-900 text-gray-400 hover:bg-gray-800 transition tracking-wider">Sheet 2: Calendar</button>
-            <button onclick="switchTab('sheet3')" id="tab-sheet3" class="px-3 py-1.5 rounded text-xs font-bold bg-gray-900 text-gray-400 hover:bg-gray-800 transition tracking-wider">Sheet 3 Workspace</button>
-            <button onclick="switchTab('sheet4')" id="tab-sheet4" class="px-3 py-1.5 rounded text-xs font-bold bg-gray-900 text-gray-400 hover:bg-gray-800 transition tracking-wider">Sheet 4 Analytics</button>
-            <button onclick="switchTab('sheet5')" id="tab-sheet5" class="px-3 py-1.5 rounded text-xs font-bold bg-gray-900 text-gray-400 hover:bg-gray-800 transition tracking-wider">Sheet 5: Lot Calculator</button>
-        </nav>
-    </header>
+        <div class="field">
+          <label>TRADE TIMEFRAME (SETUP)</label>
+          <div class="searchbox"><input type="text" id="f-tf" autocomplete="off" placeholder="e.g. 4H"></div>
+          <div class="dropdown-list" id="dd-tf"></div>
+        </div>
+        <div class="field">
+          <label>ENTRY TIMEFRAME</label>
+          <div class="searchbox"><input type="text" id="f-entrytf" autocomplete="off" placeholder="e.g. 5M"></div>
+          <div class="dropdown-list" id="dd-entrytf"></div>
+        </div>
+        <div class="field">
+          <label>INSTRUMENT</label>
+          <div class="searchbox"><input type="text" id="f-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
+          <div class="dropdown-list" id="dd-instrument"></div>
+        </div>
+        <div class="field">
+          <label>DIRECTION</label>
+          <div class="dir-toggle">
+            <div class="dir-btn buy" data-dir="BUY">BUY</div>
+            <div class="dir-btn sell" data-dir="SELL">SELL</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>ENTRY PRICE</label>
+          <input type="number" id="f-entry" step="any">
+        </div>
+        <div class="field">
+          <label>EXIT PRICE</label>
+          <input type="number" id="f-exit" step="any">
+        </div>
+        <div class="field">
+          <label>LOT SIZE</label>
+          <input type="number" id="f-lot" step="0.01" min="0.01" value="0.01">
+        </div>
+        <div class="field">
+          <label>STOP LOSS (PRICE)</label>
+          <input type="number" id="f-sl" step="any">
+        </div>
+        <div class="field">
+          <label>COMMISSION (USD)</label>
+          <input type="number" id="f-comm" step="any" value="0">
+        </div>
+        <div class="field">
+          <label>SWAP (USD)</label>
+          <input type="number" id="f-swap" step="any" value="0">
+        </div>
+        <div class="field">
+          <label>REASON OF TRADE</label>
+          <div class="searchbox"><input type="text" id="f-reason" autocomplete="off" placeholder="e.g. SBT 3"></div>
+          <div class="dropdown-list" id="dd-reason"></div>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:16px;">
+        <div class="field" style="grid-column:span 1;">
+          <label>ENTRY RULES / LINK (OPTIONAL)</label>
+          <textarea id="f-rules"></textarea>
+        </div>
+        <div class="field">
+          <label>BEFORE (OPTIONAL)</label>
+          <textarea id="f-before"></textarea>
+        </div>
+        <div class="field">
+          <label>AFTER (OPTIONAL)</label>
+          <textarea id="f-after"></textarea>
+        </div>
+        <div class="field">
+          <label>MISTAKE (OPTIONAL)</label>
+          <textarea id="f-mistake"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="submitTradeBtn">Save trade</button>
+        <button class="btn secondary" id="cancelEditBtn" style="display:none;">Cancel edit</button>
+        <span id="formMsg" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--loss);align-self:center;"></span>
+      </div>
+    </div>
+  </section>
 
-    <main class="max-w-7xl mx-auto px-4 space-y-6">
+  <!-- HISTORY -->
+  <section class="tabpane" id="pane-history">
+    <div class="filters">
+      <select id="filterYear"><option value="">All years</option></select>
+      <select id="filterMonth"><option value="">All months</option></select>
+      <select id="filterDay"><option value="">All days</option></select>
+      <button class="btn secondary" id="clearFilters">Clear</button>
+    </div>
+    <div class="filter-summary" id="filterSummary"></div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
+            <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
+            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div class="empty" id="historyEmpty" style="display:none;">No trades yet — add your first one in the "Add Trade" tab.</div>
+    </div>
+  </section>
 
-        <!-- SHEET 1: MAIN OS EXECUTIVE DASHBOARD -->
-        <section id="sheet1" class="space-y-6">
-            
-            <!-- INITIAL ACCOUNT SETUP & LIVE EQUITY CONTROL PANEL -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                
-                <!-- Initial Deposit Input -->
-                <div class="cyber-card p-5 flex flex-col justify-between">
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-500 uppercase">SYS::ACCOUNT-BASE</span>
-                        <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider mt-1">INITIAL CAPITAL</h3>
-                    </div>
-                    <div class="mt-3">
-                        <input type="number" id="initialBalance" value="100" class="custom-input text-lg font-bold text-cyan-400" oninput="saveInitialCapital(); updateAccountEquity();" placeholder="Enter Capital e.g. 100">
-                    </div>
-                </div>
+  <!-- REASON SUMMARY -->
+  <section class="tabpane" id="pane-reasons">
+    <div class="panel">
+      <h3>Performance by setup</h3>
+      <div id="reasonList"></div>
+    </div>
+  </section>
 
-                <!-- Live Current Equity Card -->
-                <div id="equityCard" class="cyber-card p-5 border-emerald-500/50 bg-emerald-950/20">
-                    <span class="text-[10px] font-mono text-emerald-400 uppercase">SYS::LIVE-EQUITY</span>
-                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider mt-1">CURRENT LIVE BALANCE</h3>
-                    <p id="liveEquityDisplay" class="text-3xl font-black text-emerald-400 mt-2">$100.00</p>
-                </div>
+  <footer>My Trading OS · data synced live via Firebase</footer>
+</div>
 
-                <!-- Total Net Profit / Loss -->
-                <div class="cyber-card p-5">
-                    <span class="text-[10px] font-mono text-gray-500 uppercase">SYS::TOTAL-PNL</span>
-                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider mt-1">NET P&L OVERALL</h3>
-                    <p id="netPnLDisplay" class="text-3xl font-black text-gray-400 mt-2">$0.00</p>
-                </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+  onSnapshot, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
-                <!-- Total Trades & Win Rate -->
-                <div class="cyber-card p-5">
-                    <span class="text-[10px] font-mono text-gray-500 uppercase">SYS::METRICS</span>
-                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider mt-1">TOTAL TRADES & WIN RATE</h3>
-                    <div class="mt-2 flex justify-between items-baseline">
-                        <span id="totalTradesDisplay" class="text-2xl font-black text-white">0</span>
-                        <span id="winRateDisplay" class="text-sm font-bold text-cyan-400">0% WR</span>
-                    </div>
-                </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAHZk_0J62Xs3r6zzgawtcy65QDprrDotA",
+  authDomain: "my-trading-os.firebaseapp.com",
+  projectId: "my-trading-os",
+  storageBucket: "my-trading-os.firebasestorage.app",
+  messagingSenderId: "1076295999471",
+  appId: "1:1076295999471:web:c24b6e71f435d25a5c201a",
+  measurementId: "G-VX1PVYBLF0"
+};
 
-            </div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const tradesCol = collection(db, "trades");
+const settingsRef = doc(db, "meta", "settings");
 
-            <!-- Trade Entry Form -->
-            <div class="cyber-card p-6 shadow-2xl">
-                <h2 id="formHeader" class="text-sm font-mono font-bold uppercase text-blue-400 border-b border-gray-800 pb-3 mb-4 tracking-wider flex justify-between items-center">
-                    <span>LOG NEW TRADE EXECUTION</span>
-                    <span class="text-[10px] font-normal text-gray-500 lowercase">zero-tolerance validation active</span>
-                </h2>
-                
-                <form id="tradeForm" onsubmit="handleTradeSubmit(event)" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <input type="hidden" id="editingTradeId" value="">
+/* ---------------- Fixed option lists ---------------- */
+const TIMEFRAMES = ["1m","3m","5m","15m","30m","1h","2h","4h","1d","1w","1month","3month"];
+const REASONS = ["SBT 1","SBT 2","SBT 3","SBT 4","SBT 5","SBT 6","SBT 7","SBT 8","SBT 9","SBT 10",
+  "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML"];
+const INSTRUMENTS = [
+  "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
+  "EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD",
+  "GBPJPY","GBPCHF","GBPAUD","GBPCAD","GBPNZD",
+  "AUDJPY","AUDCHF","AUDCAD","AUDNZD","CADJPY","CADCHF","NZDJPY","CHFJPY",
+  "XAUUSD","XAGUSD","XPTUSD","XPDUSD",
+  "USOIL","UKOIL","NATGAS","DXY",
+  "NAS100","US30","SPX500","GER40","UK100","JPN225",
+  "BTCUSDT","ETHUSDT","BNBUSDT","XRPUSDT","SOLUSDT","ADAUSDT","DOGEUSDT"
+];
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Date (DD/MM/YYYY)</label>
-                        <input type="text" id="tradeDate" placeholder="DD/MM/YYYY" required class="custom-input">
-                    </div>
+/* ---------------- Calculation logic (mirrors the Excel formulas) ---------------- */
+function pipSize(sym){
+  if(sym.slice(-3)==="JPY") return 0.01;
+  if(sym==="XAUUSD"||sym==="XAGUSD") return 0.1;
+  if(sym==="USOIL"||sym==="DXY") return 0.01;
+  if(sym==="NAS100"||sym==="BTCUSDT") return 1;
+  return 0.0001;
+}
+function contractSize(sym){
+  if(sym==="XAUUSD") return 100;
+  if(sym==="XAGUSD") return 5000;
+  if(sym==="USOIL") return 1000;
+  if(sym==="DXY") return 1000;
+  if(sym==="NAS100") return 1;
+  if(sym==="BTCUSDT") return 1;
+  return 100000;
+}
+function calcTrade(t){
+  const sym = t.instrument;
+  const diff = t.direction === "BUY" ? (t.exit - t.entry) : (t.entry - t.exit);
+  const pips = Math.round((diff / pipSize(sym)) * 10) / 10;
+  const contract = contractSize(sym);
+  const profit = diff * t.lot * contract;
+  const quote = sym.slice(-3);
+  const base = sym.slice(0,3);
+  let usdconv = 1;
+  if (quote === "USD") usdconv = 1;
+  else if (base === "USD") usdconv = 1 / t.exit;
+  else if (quote === "JPY") usdconv = 1 / t.exit;
+  const gross = profit * usdconv;
+  const net = gross - (t.commission||0) - (t.swap||0);
+  let result = "Breakeven";
+  if (net > 0) result = "Win";
+  else if (net < 0) result = "Loss";
+  return { pips: round2(pips), gross: round2(gross), net: round2(net), result };
+}
+function round2(n){ return Math.round(n*100)/100; }
+function fmtMoney(n){
+  const sign = n < 0 ? "-" : (n > 0 ? "+" : "");
+  return sign + "$" + Math.abs(n).toFixed(2);
+}
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Timeframe</label>
-                        <input list="tfOptions" id="timeframe" placeholder="Scroll or Type..." required class="custom-input" onfocus="this.value=''">
-                        <datalist id="tfOptions">
-                            <option value="M1"><option value="M3"><option value="M5"><option value="M15">
-                            <option value="M30"><option value="H1"><option value="H2"><option value="H4">
-                            <option value="D1"><option value="W1"><option value="1M">
-                        </datalist>
-                    </div>
+/* ---------------- Searchable dropdown component ---------------- */
+function makeSearchable(inputId, listId, options, onSelect){
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  function render(filter){
+    const f = (filter||"").toUpperCase();
+    const matches = options.filter(o => o.toUpperCase().startsWith(f));
+    if (!matches.length){ list.style.display="none"; return; }
+    list.innerHTML = matches.map(o => `<div data-val="${o}">${o}</div>`).join("");
+    list.style.display="block";
+  }
+  input.addEventListener("focus", () => render(input.value));
+  input.addEventListener("input", () => render(input.value));
+  input.addEventListener("blur", () => setTimeout(()=>{ list.style.display="none"; }, 150));
+  list.addEventListener("mousedown", (e) => {
+    const val = e.target.getAttribute("data-val");
+    if (val){ input.value = val; list.style.display="none"; if(onSelect) onSelect(val); }
+  });
+}
+makeSearchable("f-tf","dd-tf",TIMEFRAMES);
+makeSearchable("f-entrytf","dd-entrytf",TIMEFRAMES);
+makeSearchable("f-instrument","dd-instrument",INSTRUMENTS);
+makeSearchable("f-reason","dd-reason",REASONS);
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Instrument / Pair</label>
-                        <input list="pairOptions" id="instrument" placeholder="Scroll or Type..." required class="custom-input" oninput="calculateMetrics()" onfocus="this.value=''">
-                        <datalist id="pairOptions">
-                            <option value="EURUSD"><option value="EURGBP"><option value="EURJPY"><option value="GBPUSD"><option value="GBPJPY"><option value="USDJPY"><option value="USDCAD"><option value="AUDUSD"><option value="XAUUSD"><option value="XAGUSD"><option value="BTCUSD"><option value="ETHUSD">
-                        </datalist>
-                    </div>
+/* ---------------- Direction toggle ---------------- */
+let selectedDir = "";
+document.querySelectorAll(".dir-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
+    btn.classList.add("sel");
+    selectedDir = btn.getAttribute("data-dir");
+  });
+});
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Setup Model</label>
-                        <input list="modelOptions" id="setupModel" placeholder="Scroll or Type..." required class="custom-input" onfocus="this.value=''">
-                        <datalist id="modelOptions">
-                            <option value="SBT M 1"><option value="SBT M 2"><option value="SBT M 3"><option value="SBT M 4"><option value="SBT M 5"><option value="QML"><option value="DOUBLE TOP"><option value="DOUBLE BOTTOM">
-                        </datalist>
-                    </div>
+/* ---------------- Tabs ---------------- */
+document.querySelectorAll("nav.tabs button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("pane-"+btn.dataset.tab).classList.add("active");
+  });
+});
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Direction</label>
-                        <select id="direction" class="custom-input" onchange="calculateMetrics()">
-                            <option value="BUY">BUY</option>
-                            <option value="SELL">SELL</option>
-                        </select>
-                    </div>
+/* ---------------- State ---------------- */
+let trades = [];        // live array from Firestore
+let startingBalance = 0;
+let editingId = null;
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Entry Price</label>
-                        <input type="number" step="any" id="entryPrice" placeholder="0.00" required class="custom-input" oninput="calculateMetrics()">
-                    </div>
+/* ---------------- Firestore: live trades ---------------- */
+onSnapshot(tradesCol, (snap)=>{
+  trades = [];
+  snap.forEach(d => trades.push({ id: d.id, ...d.data() }));
+  trades.sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+  renderAll();
+});
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Stop Loss</label>
-                        <input type="number" step="any" id="stopLoss" placeholder="0.00" required class="custom-input" oninput="calculateMetrics()">
-                    </div>
+/* ---------------- Firestore: settings/balance ---------------- */
+getDoc(settingsRef).then(snap=>{
+  if (snap.exists()){
+    startingBalance = snap.data().startingBalance || 0;
+    document.getElementById("startingBalanceInput").value = startingBalance;
+    renderDashboard();
+  }
+});
+document.getElementById("saveBalanceBtn").addEventListener("click", async ()=>{
+  const v = parseFloat(document.getElementById("startingBalanceInput").value) || 0;
+  await setDoc(settingsRef, { startingBalance: v }, { merge: true });
+  startingBalance = v;
+  renderDashboard();
+  const msg = document.getElementById("balanceSavedMsg");
+  msg.style.display = "inline";
+  setTimeout(()=>{ msg.style.display="none"; }, 1500);
+});
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Take Profit</label>
-                        <input type="number" step="any" id="takeProfit" placeholder="0.00" required class="custom-input" oninput="calculateMetrics()">
-                    </div>
+/* ---------------- Add / Update trade ---------------- */
+document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
+  const msg = document.getElementById("formMsg");
+  msg.textContent = "";
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Lot Size</label>
-                        <input type="number" step="0.01" id="lotSize" placeholder="1.00" required class="custom-input" oninput="calculateMetrics()">
-                    </div>
+  const date = document.getElementById("f-date").value;
+  const tf = document.getElementById("f-tf").value.trim().toUpperCase();
+  const entrytf = document.getElementById("f-entrytf").value.trim().toUpperCase();
+  const instrument = document.getElementById("f-instrument").value.trim().toUpperCase();
+  const entry = parseFloat(document.getElementById("f-entry").value);
+  const exit = parseFloat(document.getElementById("f-exit").value);
+  const lot = parseFloat(document.getElementById("f-lot").value);
+  const sl = parseFloat(document.getElementById("f-sl").value) || null;
+  const comm = parseFloat(document.getElementById("f-comm").value) || 0;
+  const swap = parseFloat(document.getElementById("f-swap").value) || 0;
+  const reason = document.getElementById("f-reason").value.trim();
+  const rules = document.getElementById("f-rules").value.trim();
+  const before = document.getElementById("f-before").value.trim();
+  const after = document.getElementById("f-after").value.trim();
+  const mistake = document.getElementById("f-mistake").value.trim();
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Exit Price</label>
-                        <input type="number" step="any" id="exitPrice" placeholder="0.00" class="custom-input" oninput="calculateMetrics()">
-                    </div>
+  if (!date || !tf || !entrytf || !instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot < 0.01){
+    msg.textContent = "Please fill date, timeframes, instrument, direction, entry, exit and a valid lot size (min 0.01).";
+    return;
+  }
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Calculated Pips</label>
-                        <input type="text" id="calculatedPips" readonly class="custom-input bg-gray-950 text-cyan-400 font-bold" value="0.0 Pips">
-                    </div>
+  const record = {
+    date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
+    entry, exit, lot, stopLoss: sl, commission: comm, swap, reason,
+    rules, before, after, mistake,
+    createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
+  };
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">PnL ($ Profit/Loss)</label>
-                        <input type="text" id="calculatedPnL" readonly class="custom-input bg-gray-950 font-bold" value="$0.00">
-                    </div>
+  if (editingId){
+    await updateDoc(doc(db,"trades",editingId), record);
+    editingId = null;
+    document.getElementById("cancelEditBtn").style.display = "none";
+    document.getElementById("formTitle").textContent = "Add a new trade";
+  } else {
+    await addDoc(tradesCol, record);
+  }
+  resetForm();
+});
 
-                    <div class="md:col-span-3 lg:col-span-4 mt-2 flex gap-3">
-                        <button type="submit" id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold py-3 rounded transition tracking-widest uppercase shadow-lg shadow-blue-600/30">
-                            SAVE TRADE ENTRY
-                        </button>
-                        <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden bg-gray-800 hover:bg-gray-700 text-gray-300 font-mono font-bold px-6 py-3 rounded transition tracking-widest uppercase">
-                            CANCEL EDIT
-                        </button>
-                    </div>
-                </form>
-            </div>
+document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
+  editingId = null;
+  document.getElementById("cancelEditBtn").style.display = "none";
+  document.getElementById("formTitle").textContent = "Add a new trade";
+  resetForm();
+});
 
-            <!-- EXECUTED TRADES LOG TABLE WITH THREE DOTS OPTIONS -->
-            <div class="cyber-card p-6 shadow-2xl overflow-x-auto">
-                <h2 class="text-sm font-mono font-bold uppercase text-cyan-400 border-b border-gray-800 pb-3 mb-4 tracking-wider">SAVED EXECUTIONS HISTORY</h2>
-                
-                <table class="w-full text-left text-xs font-mono text-gray-300">
-                    <thead class="bg-gray-950 text-gray-400 uppercase border-b border-gray-800">
-                        <tr>
-                            <th class="p-3">Date</th>
-                            <th class="p-3">Pair</th>
-                            <th class="p-3">TF</th>
-                            <th class="p-3">Model</th>
-                            <th class="p-3">Type</th>
-                            <th class="p-3">Entry</th>
-                            <th class="p-3">Exit</th>
-                            <th class="p-3">Pips</th>
-                            <th class="p-3">PnL ($)</th>
-                            <th class="p-3 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tradesTableBody" class="divide-y divide-gray-800/60">
-                        <!-- Dynamic Rows loaded here -->
-                    </tbody>
-                </table>
-            </div>
+function resetForm(){
+  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-sl","f-rules","f-before","f-after","f-mistake","f-reason"]
+    .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f-lot").value = "0.01";
+  document.getElementById("f-comm").value = "0";
+  document.getElementById("f-swap").value = "0";
+  document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
+  selectedDir = "";
+  document.getElementById("formMsg").textContent = "";
+}
 
-        </section>
+function startEdit(t){
+  editingId = t.id;
+  document.getElementById("formTitle").textContent = "Editing trade — save to update";
+  document.getElementById("cancelEditBtn").style.display = "inline-block";
+  document.getElementById("f-date").value = t.date || "";
+  document.getElementById("f-tf").value = t.timeframe || "";
+  document.getElementById("f-entrytf").value = t.entryTimeframe || "";
+  document.getElementById("f-instrument").value = t.instrument || "";
+  document.getElementById("f-entry").value = t.entry ?? "";
+  document.getElementById("f-exit").value = t.exit ?? "";
+  document.getElementById("f-lot").value = t.lot ?? "0.01";
+  document.getElementById("f-sl").value = t.stopLoss ?? "";
+  document.getElementById("f-comm").value = t.commission ?? "0";
+  document.getElementById("f-swap").value = t.swap ?? "0";
+  document.getElementById("f-reason").value = t.reason || "";
+  document.getElementById("f-rules").value = t.rules || "";
+  document.getElementById("f-before").value = t.before || "";
+  document.getElementById("f-after").value = t.after || "";
+  document.getElementById("f-mistake").value = t.mistake || "";
+  document.querySelectorAll(".dir-btn").forEach(b=>{
+    b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
+  });
+  selectedDir = t.direction || "";
+  document.querySelector('[data-tab="addtrade"]').click();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
 
-        <!-- OTHER SHEETS -->
-        <section id="sheet2" class="hidden cyber-card p-6"><h2 class="text-sm font-mono text-blue-400">Sheet 2 Calendar View</h2></section>
-        <section id="sheet3" class="hidden cyber-card p-6"><h2 class="text-sm font-mono text-blue-400">Sheet 3 Workspace</h2></section>
-        <section id="sheet4" class="hidden cyber-card p-6"><h2 class="text-sm font-mono text-blue-400">Sheet 4 Analytics</h2></section>
-        <section id="sheet5" class="hidden cyber-card p-6"><h2 class="text-sm font-mono text-blue-400">Sheet 5 Calculator</h2></section>
+async function deleteTrade(id){
+  if (!confirm("Delete this trade? This cannot be undone.")) return;
+  await deleteDoc(doc(db,"trades",id));
+}
 
-    </main>
+/* ---------------- Render: Dashboard ---------------- */
+function renderDashboard(){
+  const total = trades.length;
+  const wins = trades.filter(t => calcTrade(t).result === "Win").length;
+  const netSum = trades.reduce((s,t) => s + calcTrade(t).net, 0);
+  const winRate = total ? Math.round((wins/total)*1000)/10 : 0;
+  const balance = startingBalance + netSum;
 
-    <script>
-        let tradesList = [];
+  document.getElementById("d-total").textContent = total;
+  document.getElementById("d-winrate").textContent = winRate + "%";
+  const netEl = document.getElementById("d-net");
+  netEl.textContent = fmtMoney(round2(netSum));
+  netEl.className = "value " + (netSum > 0 ? "pos" : (netSum < 0 ? "neg" : ""));
+  document.getElementById("d-balance").textContent = "$" + round2(balance).toFixed(2);
+}
 
-        document.addEventListener("DOMContentLoaded", () => {
-            loadInitialCapital();
-            loadTradesFromStorage();
-            setDefaultDate();
-            renderTradesTable();
-        });
+/* ---------------- Render: History with filters ---------------- */
+function populateFilterOptions(){
+  const years = new Set(), months = new Set(), days = new Set();
+  trades.forEach(t=>{
+    if(!t.date) return;
+    const [y,m,d] = t.date.split("-");
+    years.add(y); months.add(m); days.add(d);
+  });
+  fillSelect("filterYear", [...years].sort());
+  fillSelect("filterMonth", [...months].sort());
+  fillSelect("filterDay", [...days].sort());
+}
+function fillSelect(id, values){
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  const allLabel = sel.options[0].textContent;
+  sel.innerHTML = `<option value="">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join("");
+  sel.value = values.includes(current) ? current : "";
+}
+["filterYear","filterMonth","filterDay"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", renderHistory);
+});
+document.getElementById("clearFilters").addEventListener("click", ()=>{
+  document.getElementById("filterYear").value = "";
+  document.getElementById("filterMonth").value = "";
+  document.getElementById("filterDay").value = "";
+  renderHistory();
+});
 
-        function setDefaultDate() {
-            const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const yyyy = today.getFullYear();
-            document.getElementById('tradeDate').value = `${dd}/${mm}/${yyyy}`;
-        }
+function renderHistory(){
+  populateFilterOptions();
+  const y = document.getElementById("filterYear").value;
+  const m = document.getElementById("filterMonth").value;
+  const d = document.getElementById("filterDay").value;
 
-        function saveInitialCapital() {
-            const val = document.getElementById('initialBalance').value;
-            localStorage.setItem('trading_journal_capital', val);
-        }
+  const filtered = trades.filter(t=>{
+    if(!t.date) return false;
+    const [ty,tm,td] = t.date.split("-");
+    if (y && ty !== y) return false;
+    if (m && tm !== m) return false;
+    if (d && td !== d) return false;
+    return true;
+  });
 
-        function loadInitialCapital() {
-            const savedCapital = localStorage.getItem('trading_journal_capital');
-            if (savedCapital !== null) {
-                document.getElementById('initialBalance').value = savedCapital;
-            }
-        }
+  const body = document.getElementById("historyBody");
+  const emptyMsg = document.getElementById("historyEmpty");
+  body.innerHTML = "";
 
-        function saveTradesToStorage() {
-            localStorage.setItem('trading_journal_trades', JSON.stringify(tradesList));
-        }
+  let wins=0, losses=0, be=0, net=0;
+  filtered.forEach((t,i)=>{
+    const c = calcTrade(t);
+    if(c.result==="Win") wins++; else if(c.result==="Loss") losses++; else be++;
+    net += c.net;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${t.date}</td>
+      <td>${t.timeframe}</td>
+      <td>${t.entryTimeframe}</td>
+      <td>${t.instrument}</td>
+      <td class="${t.direction==='BUY'?'dir-buy':'dir-sell'}">${t.direction}</td>
+      <td class="num">${t.entry}</td>
+      <td class="num">${t.exit}</td>
+      <td class="num">${t.lot}</td>
+      <td class="num">${c.pips}</td>
+      <td class="num net ${c.net>0?'pos':(c.net<0?'neg':'zero')}">${fmtMoney(c.net)}</td>
+      <td><span class="badge ${c.result==='Win'?'win':(c.result==='Loss'?'loss':'be')}">${c.result}</span></td>
+      <td>${t.reason||"—"}</td>
+      <td><button class="rowbtn edit">Edit</button><button class="rowbtn del">Delete</button></td>
+    `;
+    tr.querySelector(".edit").addEventListener("click", ()=>startEdit(t));
+    tr.querySelector(".del").addEventListener("click", ()=>deleteTrade(t.id));
+    body.appendChild(tr);
+  });
 
-        function loadTradesFromStorage() {
-            const savedTrades = localStorage.getItem('trading_journal_trades');
-            if (savedTrades) {
-                tradesList = JSON.parse(savedTrades);
-            }
-        }
+  emptyMsg.style.display = filtered.length ? "none" : "block";
 
-        function switchTab(tabId) {
-            ['sheet1', 'sheet2', 'sheet3', 'sheet4', 'sheet5'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-                document.getElementById(`tab-${id}`).className = 'px-3 py-1.5 rounded text-xs font-bold bg-gray-900 text-gray-400 hover:bg-gray-800 transition tracking-wider';
-            });
-            
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(`tab-${tabId}`).className = 'px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white transition tracking-wider';
-        }
+  const summary = document.getElementById("filterSummary");
+  summary.innerHTML = filtered.length
+    ? `Trades: <b>${filtered.length}</b> &nbsp;·&nbsp; Wins: <b class="pos">${wins}</b> &nbsp;·&nbsp; Losses: <b class="neg">${losses}</b> &nbsp;·&nbsp; Breakeven: <b>${be}</b> &nbsp;·&nbsp; Net P/L: <b class="${net>0?'pos':(net<0?'neg':'')}">${fmtMoney(round2(net))}</b>`
+    : "No trades match this filter.";
+}
 
-        function calculateMetrics() {
-            const pair = document.getElementById('instrument').value.toUpperCase();
-            const dir = document.getElementById('direction').value;
-            const entry = parseFloat(document.getElementById('entryPrice').value) || 0;
-            const exit = parseFloat(document.getElementById('exitPrice').value) || 0;
-            const lot = parseFloat(document.getElementById('lotSize').value) || 0;
+/* ---------------- Render: Reason Summary ---------------- */
+function renderReasons(){
+  const stats = REASONS.map(r=>{
+    const rTrades = trades.filter(t => t.reason === r);
+    const wins = rTrades.filter(t=>calcTrade(t).result==="Win").length;
+    const losses = rTrades.filter(t=>calcTrade(t).result==="Loss").length;
+    const be = rTrades.filter(t=>calcTrade(t).result==="Breakeven").length;
+    const net = rTrades.reduce((s,t)=>s+calcTrade(t).net,0);
+    const winPct = rTrades.length ? Math.round((wins/rTrades.length)*100) : 0;
+    return { reason:r, total:rTrades.length, wins, losses, be, net: round2(net), winPct };
+  });
+  const maxAbs = Math.max(1, ...stats.map(s=>Math.abs(s.net)));
+  const list = document.getElementById("reasonList");
+  list.innerHTML = stats.map(s=>{
+    const pct = (Math.abs(s.net)/maxAbs)*100;
+    const cls = s.net >= 0 ? "pos" : "neg";
+    return `
+      <div class="reason-row">
+        <div class="name">${s.reason}</div>
+        <div>
+          <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+          <div class="reason-meta">${s.total} trades · ${s.wins}W / ${s.losses}L / ${s.be}BE · ${s.winPct}% win</div>
+        </div>
+        <div class="reason-net ${cls==='pos'?'net pos':'net neg'}">${fmtMoney(s.net)}</div>
+      </div>
+    `;
+  }).join("");
+}
 
-            if (!entry || !exit || !lot) return;
-
-            let pipMultiplier = 10000;
-            let contractSize = 100000;
-
-            if (pair.includes("JPY")) pipMultiplier = 100;
-            else if (pair.includes("XAUUSD")) { pipMultiplier = 10; contractSize = 100; }
-            else if (pair.includes("XAGUSD")) { pipMultiplier = 100; contractSize = 5000; }
-            else if (pair.includes("BTCUSD") || pair.includes("ETHUSD")) { pipMultiplier = 1; contractSize = 1; }
-
-            let pips = (dir === 'BUY') ? (exit - entry) * pipMultiplier : (entry - exit) * pipMultiplier;
-            let pnl = (dir === 'BUY') ? (exit - entry) * lot * contractSize : (entry - exit) * lot * contractSize;
-
-            document.getElementById('calculatedPips').value = `${pips.toFixed(1)} Pips`;
-            const pnlElement = document.getElementById('calculatedPnL');
-            pnlElement.value = `$${pnl.toFixed(2)}`;
-            pnlElement.className = pnl >= 0 ? "custom-input bg-gray-950 text-cyan-400 font-bold" : "custom-input bg-gray-950 text-rose-500 font-bold";
-        }
-
-        function updateAccountEquity() {
-            const initialCap = parseFloat(document.getElementById('initialBalance').value) || 0;
-            const totalNetPnL = tradesList.reduce((sum, trade) => sum + trade.pnl, 0);
-            const currentEquity = initialCap + totalNetPnL;
-
-            const liveEquityDisplay = document.getElementById('liveEquityDisplay');
-            const equityCard = document.getElementById('equityCard');
-            const netPnLDisplay = document.getElementById('netPnLDisplay');
-            const totalTradesDisplay = document.getElementById('totalTradesDisplay');
-            const winRateDisplay = document.getElementById('winRateDisplay');
-
-            liveEquityDisplay.innerText = `$${currentEquity.toFixed(2)}`;
-            netPnLDisplay.innerText = `$${totalNetPnL.toFixed(2)}`;
-            netPnLDisplay.className = totalNetPnL >= 0 ? "text-3xl font-black text-cyan-400 mt-2" : "text-3xl font-black text-rose-500 mt-2";
-
-            totalTradesDisplay.innerText = tradesList.length;
-
-            if (tradesList.length > 0) {
-                const winningTrades = tradesList.filter(t => t.pnl > 0).length;
-                const winRate = ((winningTrades / tradesList.length) * 100).toFixed(0);
-                winRateDisplay.innerText = `${winRate}% WR`;
-            } else {
-                winRateDisplay.innerText = `0% WR`;
-            }
-
-            if (currentEquity < initialCap) {
-                equityCard.className = "cyber-card p-5 border-rose-500/50 bg-rose-950/20";
-                liveEquityDisplay.className = "text-3xl font-black text-rose-500 mt-2";
-            } else {
-                equityCard.className = "cyber-card p-5 border-emerald-500/50 bg-emerald-950/20";
-                liveEquityDisplay.className = "text-3xl font-black text-emerald-400 mt-2";
-            }
-        }
-
-        function handleTradeSubmit(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editingTradeId').value;
-            const pnlVal = parseFloat(document.getElementById('calculatedPnL').value.replace('$', '')) || 0;
-            const pipsVal = parseFloat(document.getElementById('calculatedPips').value) || 0;
-
-            const tradeData = {
-                id: editId ? parseInt(editId) : Date.now(),
-                date: document.getElementById('tradeDate').value,
-                tf: document.getElementById('timeframe').value,
-                pair: document.getElementById('instrument').value,
-                model: document.getElementById('setupModel').value,
-                dir: document.getElementById('direction').value,
-                entry: parseFloat(document.getElementById('entryPrice').value),
-                sl: parseFloat(document.getElementById('stopLoss').value),
-                tp: parseFloat(document.getElementById('takeProfit').value),
-                lot: parseFloat(document.getElementById('lotSize').value),
-                exit: parseFloat(document.getElementById('exitPrice').value),
-                pips: pipsVal,
-                pnl: pnlVal
-            };
-
-            if (editId) {
-                tradesList = tradesList.map(t => t.id === parseInt(editId) ? tradeData : t);
-            } else {
-                tradesList.unshift(tradeData);
-            }
-
-            saveTradesToStorage();
-            resetForm();
-            renderTradesTable();
-        }
-
-        function renderTradesTable() {
-            const tbody = document.getElementById('tradesTableBody');
-            tbody.innerHTML = '';
-
-            if (tradesList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-gray-600 italic">No trade executions saved yet.</td></tr>`;
-            } else {
-                tradesList.forEach(trade => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-900/60 transition";
-                    const pnlColor = trade.pnl >= 0 ? "text-cyan-400 font-bold" : "text-rose-500 font-bold";
-                    
-                    tr.innerHTML = `
-                        <td class="p-3">${trade.date}</td>
-                        <td class="p-3 font-bold text-white">${trade.pair}</td>
-                        <td class="p-3">${trade.tf}</td>
-                        <td class="p-3 text-gray-400">${trade.model}</td>
-                        <td class="p-3 ${trade.dir === 'BUY' ? 'text-emerald-400' : 'text-rose-400'} font-bold">${trade.dir}</td>
-                        <td class="p-3">${trade.entry}</td>
-                        <td class="p-3">${trade.exit}</td>
-                        <td class="p-3">${trade.pips}</td>
-                        <td class="p-3 ${pnlColor}">$${trade.pnl.toFixed(2)}</td>
-                        <td class="p-3 text-right relative">
-                            <button onclick="toggleActionMenu(event, ${trade.id})" class="text-gray-400 hover:text-white font-bold text-lg px-2 py-1 focus:outline-none">⋮</button>
-                            
-                            <div id="action-menu-${trade.id}" class="hidden absolute right-2 top-8 z-30 w-32 bg-gray-900 border border-gray-700 rounded shadow-2xl py-1 text-left">
-                                <button onclick="editTrade(${trade.id})" class="w-full px-3 py-1.5 text-xs text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2">
-                                    ✏️ Modify
-                                </button>
-                                <button onclick="deleteTrade(${trade.id})" class="w-full px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2">
-                                    🗑️ Delete
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            updateAccountEquity();
-        }
-
-        function toggleActionMenu(event, id) {
-            event.stopPropagation();
-            document.querySelectorAll('[id^="action-menu-"]').forEach(el => {
-                if (el.id !== `action-menu-${id}`) el.classList.add('hidden');
-            });
-            const menu = document.getElementById(`action-menu-${id}`);
-            menu.classList.toggle('hidden');
-        }
-
-        document.addEventListener('click', () => {
-            document.querySelectorAll('[id^="action-menu-"]').forEach(el => el.classList.add('hidden'));
-        });
-
-        function editTrade(id) {
-            const trade = tradesList.find(t => t.id === id);
-            if (!trade) return;
-
-            document.getElementById('editingTradeId').value = trade.id;
-            document.getElementById('tradeDate').value = trade.date;
-            document.getElementById('timeframe').value = trade.tf;
-            document.getElementById('instrument').value = trade.pair;
-            document.getElementById('setupModel').value = trade.model;
-            document.getElementById('direction').value = trade.dir;
-            document.getElementById('entryPrice').value = trade.entry;
-            document.getElementById('stopLoss').value = trade.sl;
-            document.getElementById('takeProfit').value = trade.tp;
-            document.getElementById('lotSize').value = trade.lot;
-            document.getElementById('exitPrice').value = trade.exit;
-
-            calculateMetrics();
-
-            document.getElementById('formHeader').innerHTML = `<span>MODIFY SAVED TRADE EXECUTION</span><span class="text-[10px] text-amber-400 font-mono">editing mode</span>`;
-            document.getElementById('submitBtn').innerText = "UPDATE TRADE ENTRY";
-            document.getElementById('submitBtn').className = "flex-1 bg-amber-600 hover:bg-amber-500 text-white font-mono font-bold py-3 rounded transition tracking-widest uppercase shadow-lg shadow-amber-600/30";
-            document.getElementById('cancelBtn').classList.remove('hidden');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function deleteTrade(id) {
-            if (confirm("Are you sure you want to delete this trade execution?")) {
-                tradesList = tradesList.filter(t => t.id !== id);
-                saveTradesToStorage();
-                renderTradesTable();
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('tradeForm').reset();
-            document.getElementById('editingTradeId').value = "";
-            document.getElementById('calculatedPips').value = "0.0 Pips";
-            document.getElementById('calculatedPnL').value = "$0.00";
-            
-            setDefaultDate();
-
-            document.getElementById('formHeader').innerHTML = `<span>LOG NEW TRADE EXECUTION</span><span class="text-[10px] font-normal text-gray-500 lowercase">zero-tolerance validation active</span>`;
-            document.getElementById('submitBtn').innerText = "SAVE TRADE ENTRY";
-            document.getElementById('submitBtn').className = "flex-1 bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold py-3 rounded transition tracking-widest uppercase shadow-lg shadow-blue-600/30";
-            document.getElementById('cancelBtn').classList.add('hidden');
-        }
-    </script>
+function renderAll(){
+  renderDashboard();
+  renderHistory();
+  renderReasons();
+}
+</script>
 </body>
 </html>
