@@ -485,6 +485,7 @@
           <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);">PROFIT / LOSS</span><br><span id="preview-net" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">—</span></div>
           <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);">RESULT</span><br><span id="preview-result" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">—</span></div>
         </div>
+        <div class="sub" id="preview-warning" style="display:none;margin-top:10px;color:var(--gold);"></div>
       </div>
       <div class="form-actions">
         <button class="btn" id="submitTradeBtn">Save trade</button>
@@ -624,33 +625,44 @@ const REASONS = ["SBT 1","SBT 2","SBT 3","SBT 4","SBT 5","SBT 6","SBT 7","SBT 8"
   "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML","Double Top","Double Bottom","Gautam Trick"];
 const MISTAKES = ["Directional 123, Not MSS","Zone Break","1 Candle Close","General Demand","General Supply",
   "Early Entry","Moved SL","SL Positioning Wrong","Structure Wrong Mark","Confusing the Structure","Confusing the Model","Gautam Trick"];
+/* Only instruments with a verified, near-universal broker-standard contract
+   size AND a correct USD-conversion path are listed here. Removed: all forex
+   crosses that don't involve USD directly (their P&L math relies on an
+   unverifiable 1:1 approximation, or — for the JPY crosses — an outright
+   wrong conversion rate), plus indices/NATGAS/DXY/altcoins whose contract
+   size genuinely varies broker-to-broker with no single correct default. */
 const INSTRUMENTS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
-  "EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD",
-  "GBPJPY","GBPCHF","GBPAUD","GBPCAD","GBPNZD",
-  "AUDJPY","AUDCHF","AUDCAD","AUDNZD","CADJPY","CADCHF","NZDJPY","CHFJPY",
   "XAUUSD","XAGUSD","XPTUSD","XPDUSD",
-  "USOIL","UKOIL","NATGAS","DXY",
-  "NAS100","US30","SPX500","GER40","UK100","JPN225",
-  "BTCUSDT","ETHUSDT","BNBUSDT","XRPUSDT","SOLUSDT","ADAUSDT","DOGEUSDT"
+  "USOIL","UKOIL",
+  "BTCUSDT"
 ];
+const VERIFIED_INSTRUMENTS = new Set(INSTRUMENTS);
 
-/* ---------------- Calculation logic (mirrors the Excel formulas) ---------------- */
+/* ---------------- Calculation logic (mirrors the Excel formulas) ----------------
+   Every instrument offered in INSTRUMENTS (see above) has been cross-checked
+   against multiple real broker contract specifications (Sept 2026 research) —
+   pip size, contract size, and the USD-conversion path are all verified.
+   Indices, natural gas, DXY, non-BTC crypto, and forex crosses that don't
+   involve USD directly were deliberately left OUT of the instrument list —
+   their contract size (or, for JPY crosses, the USD conversion itself)
+   genuinely differs between brokers or was found to be mathematically wrong,
+   and there was no single reliable default to fall back on. If you need one
+   of those instruments, share your broker's exact symbol specification
+   (Contract Size + tick size) and it can be added back in correctly. */
 function pipSize(sym){
-  if(sym.slice(-3)==="JPY") return 0.01;
-  if(sym==="XAUUSD"||sym==="XAGUSD") return 0.1;
-  if(sym==="USOIL"||sym==="DXY") return 0.01;
-  if(sym==="NAS100"||sym==="BTCUSDT") return 1;
-  return 0.0001;
+  if(sym.slice(-3)==="JPY") return 0.01;                                  // JPY pairs: verified standard
+  if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.01;    // metals: verified standard (broker specs)
+  if(sym==="USOIL"||sym==="UKOIL") return 0.01;                          // oil: verified standard
+  if(sym==="BTCUSDT") return 1;                                          // crypto: verified standard (1 lot = 1 coin)
+  return 0.0001;                                                         // forex majors: verified standard
 }
 function contractSize(sym){
-  if(sym==="XAUUSD") return 100;
-  if(sym==="XAGUSD") return 5000;
-  if(sym==="USOIL") return 1000;
-  if(sym==="DXY") return 1000;
-  if(sym==="NAS100") return 1;
-  if(sym==="BTCUSDT") return 1;
-  return 100000;
+  if(sym==="XAUUSD"||sym==="XPTUSD"||sym==="XPDUSD") return 100;   // metals: verified standard, 100 oz/lot
+  if(sym==="XAGUSD") return 5000;                                 // silver: verified standard, 5000 oz/lot
+  if(sym==="USOIL"||sym==="UKOIL") return 1000;                   // oil: verified standard, 1000 barrels/lot
+  if(sym==="BTCUSDT") return 1;                                   // crypto: verified standard, 1 lot = 1 coin
+  return 100000;                                                  // forex majors: verified standard, 100,000 units/lot
 }
 function calcTrade(t){
   const sym = t.instrument;
@@ -776,6 +788,14 @@ function updateLivePreview(){
   const resEl = document.getElementById("preview-result");
   resEl.textContent = c.result;
   resEl.style.color = c.result === "Win" ? "var(--win)" : (c.result === "Loss" ? "var(--loss)" : "var(--be)");
+
+  const warnEl = document.getElementById("preview-warning");
+  if (!VERIFIED_INSTRUMENTS.has(instrument)){
+    warnEl.style.display = "block";
+    warnEl.textContent = "⚠ \"" + instrument + "\" is not in the verified instrument list — its contract size/pip value hasn't been confirmed against a real broker, so this P&L may be inaccurate.";
+  } else {
+    warnEl.style.display = "none";
+  }
 }
 ["f-instrument","f-entry","f-exit","f-lot"].forEach(id=>{
   document.getElementById(id).addEventListener("input", updateLivePreview);
@@ -1303,11 +1323,18 @@ function updateCalcMode(){
   document.getElementById("calc-entry-field").style.display = needsEntry ? "block" : "none";
   document.getElementById("calc-slprice-field").style.display = needsEntry ? "block" : "none";
   document.getElementById("calc-slpips-field").style.display = needsEntry ? "none" : "block";
-  document.getElementById("calc-mode-note").textContent = instrument
-    ? (needsEntry
-        ? "This pair needs a live price to convert into USD — enter Entry Price + Stop Loss Price."
-        : "Just enter your Stop Loss in pips — no Entry Price needed for this instrument.")
-    : "";
+  const noteEl = document.getElementById("calc-mode-note");
+  if (!instrument){
+    noteEl.textContent = "";
+  } else if (!VERIFIED_INSTRUMENTS.has(instrument)){
+    noteEl.textContent = "⚠ \"" + instrument + "\" is not in the verified instrument list — its contract size/pip value hasn't been confirmed against a real broker, so this lot size may be inaccurate.";
+    noteEl.style.color = "var(--gold)";
+  } else {
+    noteEl.textContent = needsEntry
+      ? "This pair needs a live price to convert into USD — enter Entry Price + Stop Loss Price."
+      : "Just enter your Stop Loss in pips — no Entry Price needed for this instrument.";
+    noteEl.style.color = "";
+  }
   computeSuggestedLot();
 }
 
