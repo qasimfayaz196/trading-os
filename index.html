@@ -22,6 +22,21 @@
     --loss:#D2694A;
     --be:#B7A15C;
   }
+  html[data-theme="light"]{
+    --bg:#F5F2EA;
+    --panel:#FFFFFF;
+    --panel-2:#F0ECE1;
+    --line:#DCD5C2;
+    --line-soft:#E8E3D6;
+    --text:#2A2620;
+    --text-dim:#71695A;
+    --gold:#9C7A2E;
+    --gold-soft:#B99A4F;
+    --win:#2E8664;
+    --loss:#B3492A;
+    --be:#8A6F2E;
+  }
+  html, body{ transition: background .15s, color .15s; }
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -160,6 +175,8 @@
   .dir-btn{flex:1;padding:9px 10px;text-align:center;border:1px solid var(--line);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);}
   .dir-btn.buy.sel{background:rgba(79,174,142,.15);border-color:var(--win);color:var(--win);}
   .dir-btn.sell.sel{background:rgba(210,105,74,.15);border-color:var(--loss);color:var(--loss);}
+  .grade-btn{flex:1;padding:9px 10px;text-align:center;border:1px solid var(--line);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);}
+  .grade-btn.sel{background:rgba(201,162,75,.15);border-color:var(--gold);color:var(--gold);}
   .form-actions{margin-top:20px;display:flex;gap:10px;}
 
   /* Filters */
@@ -228,6 +245,8 @@
   .rg-block{border:1px solid var(--line-soft);padding:16px;background:var(--panel-2);}
   .rg-block .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;margin-bottom:10px;}
   .rg-block .big{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;margin-bottom:10px;}
+  .rg-block .big.pos{color:var(--win);}
+  .rg-block .big.neg{color:var(--loss);}
   .progress-track{background:var(--line-soft);height:12px;position:relative;overflow:hidden;}
   .progress-fill{position:absolute;top:0;left:0;bottom:0;background:var(--gold);transition:width .2s;}
   .progress-fill.danger{background:var(--loss);}
@@ -255,6 +274,7 @@
       <h1>Trading Journal</h1>
       <div class="sub">Every entry, exit and the reasoning behind it — synced live to your account.</div>
     </div>
+    <button class="icon-btn" id="themeToggleBtn" title="Toggle dark/light theme">🌙 Dark</button>
   </header>
 
   <div class="strategy-bar">
@@ -359,6 +379,30 @@
       </div>
     </div>
 
+    <div class="panel" style="position:relative;">
+      <h3>Monthly report</h3>
+      <select id="monthlyReportSelect" style="margin-bottom:16px;"></select>
+      <div class="rg-grid" id="monthlyReportGrid">
+        <div class="rg-block">
+          <div class="label">TRADES / WIN RATE</div>
+          <div class="big" id="mr-trades">—</div>
+        </div>
+        <div class="rg-block">
+          <div class="label">NET P/L THIS MONTH</div>
+          <div class="big" id="mr-net">—</div>
+        </div>
+        <div class="rg-block">
+          <div class="label">BEST TRADE</div>
+          <div class="big" id="mr-best">—</div>
+        </div>
+        <div class="rg-block">
+          <div class="label">WORST TRADE</div>
+          <div class="big" id="mr-worst">—</div>
+        </div>
+      </div>
+      <div class="empty" id="mr-empty" style="display:none;">No trades logged yet — a monthly report will appear once you add some.</div>
+    </div>
+
     <div class="panel">
       <h3 style="color:var(--loss);">Danger zone</h3>
       <div class="sub" style="margin-bottom:14px;">Permanently delete every trade in this journal — use this to start a fresh record (e.g. a new year). Your starting balance stays as-is; update it separately above if needed.</div>
@@ -414,6 +458,14 @@
           <div class="searchbox"><input type="text" id="f-reason" autocomplete="off" placeholder="e.g. SBT 3"></div>
           <div class="dropdown-list" id="dd-reason"></div>
         </div>
+        <div class="field">
+          <label>TRADE QUALITY (OPTIONAL)</label>
+          <div class="dir-toggle">
+            <div class="grade-btn" data-grade="A">A — Clean</div>
+            <div class="grade-btn" data-grade="B">B — Okay</div>
+            <div class="grade-btn" data-grade="C">C — Weak</div>
+          </div>
+        </div>
       </div>
       <div class="form-grid" style="margin-top:16px;">
         <div class="field" style="grid-column:span 1;">
@@ -458,7 +510,7 @@
           <tr>
             <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
             <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
-            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th></th>
+            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th>Grade</th><th></th>
           </tr>
         </thead>
         <tbody id="historyBody"></tbody>
@@ -472,6 +524,12 @@
     <div class="panel">
       <h3>Performance by setup</h3>
       <div id="reasonList"></div>
+    </div>
+    <div class="panel">
+      <h3>Trade quality by grade</h3>
+      <div class="sub" style="margin-bottom:14px;">Based on the A/B/C grade you gave the setup when logging the trade — shows whether your "clean" setups actually win more.</div>
+      <div id="gradeList"></div>
+      <div class="empty" id="gradeEmpty" style="display:none;">No trades graded yet — pick A/B/C in the "Add Trade" form to see this.</div>
     </div>
     <div class="panel">
       <h3>Mistake analytics</h3>
@@ -500,19 +558,20 @@
           <div class="searchbox"><input type="text" id="calc-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
           <div class="dropdown-list" id="dd-calc-instrument"></div>
         </div>
-        <div class="field">
+        <div class="field" id="calc-entry-field">
           <label>ENTRY PRICE</label>
           <input type="number" id="calc-entry" step="any">
         </div>
-        <div class="field">
-          <label>STOP LOSS — PRICE (fill this OR pips)</label>
+        <div class="field" id="calc-slprice-field">
+          <label>STOP LOSS PRICE</label>
           <input type="number" id="calc-sl-price" step="any" placeholder="e.g. 3345.50">
         </div>
-        <div class="field">
-          <label>STOP LOSS — PIPS (fill this OR price)</label>
+        <div class="field" id="calc-slpips-field">
+          <label>STOP LOSS — PIPS</label>
           <input type="number" id="calc-sl-pips" step="any" placeholder="e.g. 300">
         </div>
       </div>
+      <div class="sub" id="calc-mode-note" style="margin-bottom:14px;"></div>
       <div class="sub" id="calc-sl-note" style="margin-top:-6px;margin-bottom:10px;"></div>
       <div class="calc-result" id="calc-result">Suggested lot size: —</div>
     </div>
@@ -678,6 +737,21 @@ document.querySelectorAll(".dir-btn").forEach(btn=>{
     btn.classList.add("sel");
     selectedDir = btn.getAttribute("data-dir");
     updateLivePreview();
+  });
+});
+
+/* ---------------- Trade quality grade toggle (optional, click again to clear) ---------------- */
+let selectedGrade = "";
+document.querySelectorAll(".grade-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const already = btn.classList.contains("sel");
+    document.querySelectorAll(".grade-btn").forEach(b=>b.classList.remove("sel"));
+    if (already){
+      selectedGrade = "";
+    } else {
+      btn.classList.add("sel");
+      selectedGrade = btn.getAttribute("data-grade");
+    }
   });
 });
 
@@ -1117,6 +1191,45 @@ function renderEquityCurve(){
 }
 
 /* ---------------- Mistake analytics ---------------- */
+/* ---------------- Trade quality by grade ---------------- */
+function renderGradeAnalytics(){
+  const list = document.getElementById("gradeList");
+  const emptyEl = document.getElementById("gradeEmpty");
+  const graded = trades.filter(t => t.grade === "A" || t.grade === "B" || t.grade === "C");
+
+  if (!graded.length){
+    list.innerHTML = "";
+    emptyEl.style.display = "block";
+    return;
+  }
+  emptyEl.style.display = "none";
+
+  const stats = ["A","B","C"].map(g=>{
+    const gTrades = graded.filter(t => t.grade === g);
+    if (!gTrades.length) return null;
+    const wins = gTrades.filter(t => calcTrade(t).result === "Win").length;
+    const net = gTrades.reduce((s,t)=>s+calcTrade(t).net, 0);
+    const winRate = Math.round((wins/gTrades.length)*1000)/10;
+    return { grade: g, total: gTrades.length, wins, winRate, net: round2(net) };
+  }).filter(Boolean);
+
+  const maxAbs = Math.max(1, ...stats.map(s=>Math.abs(s.net)));
+  list.innerHTML = stats.map(s=>{
+    const pct = (Math.abs(s.net)/maxAbs)*100;
+    const cls = s.net >= 0 ? "pos" : "neg";
+    return `
+      <div class="reason-row">
+        <div class="name">Grade ${s.grade}</div>
+        <div>
+          <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+          <div class="reason-meta">${s.total} trades · ${s.winRate}% win rate</div>
+        </div>
+        <div class="reason-net ${cls==='pos'?'net pos':'net neg'}">${fmtMoney(s.net)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
 function renderMistakeAnalytics(){
   const groups = {};
   trades.forEach(t=>{
@@ -1160,52 +1273,72 @@ function renderMistakeAnalytics(){
 }
 
 /* ---------------- Position size calculator (standalone tab) ---------------- */
-makeSearchable("calc-instrument", "dd-calc-instrument", INSTRUMENTS, computeSuggestedLot);
+makeSearchable("calc-instrument", "dd-calc-instrument", INSTRUMENTS, updateCalcMode);
+document.getElementById("calc-slprice-field").style.display = "none"; // default: pips mode
+document.getElementById("calc-entry-field").style.display = "none";
 
 document.querySelector('nav.tabs button[data-tab="calculator"]').addEventListener("click", ()=>{
   // Pre-fill balance with the live current balance each time the tab is opened
   const sb = (startingBalance ?? 0) + trades.reduce((s,t)=>s+calcTrade(t).net, 0);
   document.getElementById("calc-balance").value = round2(sb);
-  computeSuggestedLot();
+  updateCalcMode();
 });
 
-["calc-balance","calc-risk","calc-instrument","calc-entry","calc-sl-price","calc-sl-pips"].forEach(id=>{
+["calc-balance","calc-risk","calc-entry","calc-sl-price","calc-sl-pips"].forEach(id=>{
   document.getElementById(id).addEventListener("input", computeSuggestedLot);
 });
+document.getElementById("calc-instrument").addEventListener("input", updateCalcMode);
+
+/* Pairs where USD is the base currency (USDJPY, USDCAD...) or the quote is JPY
+   need a live price to convert P&L into USD — for every other instrument
+   (XAUUSD, EURUSD, indices, crypto...) only Pips + Instrument are needed. */
+function calcModeNeedsEntry(instrument){
+  const quote = instrument.slice(-3), base = instrument.slice(0,3);
+  return !!instrument && quote !== "USD" && (base === "USD" || quote === "JPY");
+}
+
+function updateCalcMode(){
+  const instrument = document.getElementById("calc-instrument").value.trim().toUpperCase();
+  const needsEntry = calcModeNeedsEntry(instrument);
+  document.getElementById("calc-entry-field").style.display = needsEntry ? "block" : "none";
+  document.getElementById("calc-slprice-field").style.display = needsEntry ? "block" : "none";
+  document.getElementById("calc-slpips-field").style.display = needsEntry ? "none" : "block";
+  document.getElementById("calc-mode-note").textContent = instrument
+    ? (needsEntry
+        ? "This pair needs a live price to convert into USD — enter Entry Price + Stop Loss Price."
+        : "Just enter your Stop Loss in pips — no Entry Price needed for this instrument.")
+    : "";
+  computeSuggestedLot();
+}
 
 let suggestedLot = null;
 function computeSuggestedLot(){
   const balance = parseFloat(document.getElementById("calc-balance").value);
   const riskPct = parseFloat(document.getElementById("calc-risk").value);
   const instrument = document.getElementById("calc-instrument").value.trim().toUpperCase();
-  const entry = parseFloat(document.getElementById("calc-entry").value);
-  const slPriceRaw = document.getElementById("calc-sl-price").value;
-  const slPipsRaw = document.getElementById("calc-sl-pips").value;
   const resultEl = document.getElementById("calc-result");
-  const noteEl = document.getElementById("calc-sl-note");
+  const needsEntry = calcModeNeedsEntry(instrument);
+  const quote = instrument.slice(-3), base = instrument.slice(0,3);
 
-  // Whichever of Price / Pips is actually filled in wins — no mode switch needed.
-  // If both are filled, the price field is used since it's the more exact figure.
   let priceDistance = null;
-  let usedNote = "";
-  if (slPriceRaw !== "" && !isNaN(parseFloat(slPriceRaw)) && !isNaN(entry)){
-    priceDistance = Math.abs(entry - parseFloat(slPriceRaw));
-    usedNote = slPipsRaw !== "" ? "Using SL Price (Pips value ignored since both were filled)." : "";
-  } else if (slPipsRaw !== "" && !isNaN(parseFloat(slPipsRaw)) && instrument){
-    priceDistance = parseFloat(slPipsRaw) * pipSize(instrument);
-    usedNote = "";
-  }
-  noteEl.textContent = usedNote;
+  let entry = NaN;
 
-  if (!instrument || isNaN(balance) || isNaN(riskPct) || isNaN(entry) || priceDistance === null || priceDistance === 0){
+  if (needsEntry){
+    entry = parseFloat(document.getElementById("calc-entry").value);
+    const sl = parseFloat(document.getElementById("calc-sl-price").value);
+    if (!isNaN(entry) && !isNaN(sl)) priceDistance = Math.abs(entry - sl);
+  } else {
+    const pips = parseFloat(document.getElementById("calc-sl-pips").value);
+    if (!isNaN(pips) && instrument) priceDistance = pips * pipSize(instrument);
+  }
+
+  if (!instrument || isNaN(balance) || isNaN(riskPct) || priceDistance === null || priceDistance === 0){
     resultEl.textContent = "Suggested lot size: —";
     suggestedLot = null;
     return;
   }
   const riskAmount = balance * (riskPct/100);
   const contract = contractSize(instrument);
-  const quote = instrument.slice(-3);
-  const base = instrument.slice(0,3);
   let usdconv = 1;
   if (quote === "USD") usdconv = 1;
   else if (base === "USD") usdconv = 1/entry;
@@ -1236,10 +1369,10 @@ document.getElementById("exportCsvBtn").addEventListener("click", ()=>{
   });
   if (!filtered.length){ showToast("✗ No trades to export for this filter.", "error"); return; }
 
-  const headers = ["Date","Trade Timeframe","Entry Timeframe","Instrument","Direction","Entry","Exit","Lot","Pips","Net P/L","Result","Reason","Entry Rules","Mistake"];
+  const headers = ["Date","Trade Timeframe","Entry Timeframe","Instrument","Direction","Entry","Exit","Lot","Pips","Net P/L","Result","Reason","Grade","Entry Rules","Mistake"];
   const rows = filtered.map(t=>{
     const c = calcTrade(t);
-    return [t.date, t.timeframe, t.entryTimeframe, t.instrument, t.direction, t.entry, t.exit, t.lot, c.pips, c.net, c.result, t.reason||"", t.rules||"", t.mistake||""];
+    return [t.date, t.timeframe, t.entryTimeframe, t.instrument, t.direction, t.entry, t.exit, t.lot, c.pips, c.net, c.result, t.reason||"", t.grade||"", t.rules||"", t.mistake||""];
   });
   const esc = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
   const csv = [headers.map(esc).join(","), ...rows.map(r=>r.map(esc).join(","))].join("\r\n");
@@ -1268,6 +1401,24 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
     prompt("Copy this read-only link:", url);
   }
 });
+
+/* ---------------- Dark / light theme toggle ---------------- */
+(function initTheme(){
+  const btn = document.getElementById("themeToggleBtn");
+  function apply(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    btn.textContent = theme === "light" ? "☀️ Light" : "🌙 Dark";
+  }
+  let saved = "dark";
+  try { saved = localStorage.getItem("myTradingOsTheme") || "dark"; } catch(e){}
+  apply(saved);
+  btn.addEventListener("click", ()=>{
+    const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+    const next = current === "light" ? "dark" : "light";
+    apply(next);
+    try { localStorage.setItem("myTradingOsTheme", next); } catch(e){}
+  });
+})();
 
 initApp();
 
@@ -1299,7 +1450,7 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
 
   const record = {
     date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
-    entry, exit, lot, commission: 0, swap: 0, reason,
+    entry, exit, lot, commission: 0, swap: 0, reason, grade: selectedGrade,
     rules, mistake,
     createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
   };
@@ -1343,7 +1494,9 @@ function resetForm(){
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("f-lot").value = "0.01";
   document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
+  document.querySelectorAll(".grade-btn").forEach(b=>b.classList.remove("sel"));
   selectedDir = "";
+  selectedGrade = "";
   document.getElementById("formMsg").textContent = "";
   updateLivePreview();
 }
@@ -1366,6 +1519,10 @@ function startEdit(t){
     b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
   });
   selectedDir = t.direction || "";
+  document.querySelectorAll(".grade-btn").forEach(b=>{
+    b.classList.toggle("sel", b.getAttribute("data-grade") === t.grade);
+  });
+  selectedGrade = t.grade || "";
   updateLivePreview();
   document.querySelector('[data-tab="addtrade"]').click();
   window.scrollTo({top:0, behavior:"smooth"});
@@ -1470,6 +1627,7 @@ function renderHistory(){
       <td class="num net ${c.net>0?'pos':(c.net<0?'neg':'zero')}">${fmtMoney(c.net)}</td>
       <td><span class="badge ${c.result==='Win'?'win':(c.result==='Loss'?'loss':'be')}">${c.result}</span></td>
       <td>${t.reason||"—"}</td>
+      <td>${t.grade||"—"}</td>
       <td>${readOnlyMode ? "" : `<button class="rowbtn edit">Edit</button><button class="rowbtn del">Delete</button>`}</td>
     `;
     if (!readOnlyMode){
@@ -1516,13 +1674,62 @@ function renderReasons(){
   }).join("");
 }
 
+/* ---------------- Monthly report (auto-generated) ---------------- */
+document.getElementById("monthlyReportSelect").addEventListener("change", renderMonthlyReport);
+function renderMonthlyReport(){
+  const sel = document.getElementById("monthlyReportSelect");
+  const grid = document.getElementById("monthlyReportGrid");
+  const emptyEl = document.getElementById("mr-empty");
+
+  if (!trades.length){
+    sel.innerHTML = "";
+    grid.style.display = "none";
+    emptyEl.style.display = "block";
+    return;
+  }
+  grid.style.display = "grid";
+  emptyEl.style.display = "none";
+
+  const months = [...new Set(trades.filter(t=>t.date).map(t => t.date.slice(0,7)))].sort().reverse();
+  const prevSelected = sel.value;
+  sel.innerHTML = months.map(m=>{
+    const [y,mo] = m.split("-");
+    const label = new Date(y, mo-1, 1).toLocaleString("en-US", { month:"long", year:"numeric" });
+    return `<option value="${m}">${label}</option>`;
+  }).join("");
+  const target = months.includes(prevSelected) ? prevSelected : months[0];
+  sel.value = target;
+
+  const monthTrades = trades.filter(t => (t.date||"").slice(0,7) === target);
+  const wins = monthTrades.filter(t => calcTrade(t).result === "Win").length;
+  const winRate = monthTrades.length ? Math.round((wins/monthTrades.length)*1000)/10 : 0;
+  const net = monthTrades.reduce((s,t)=>s+calcTrade(t).net, 0);
+
+  document.getElementById("mr-trades").textContent = `${monthTrades.length} trades / ${winRate}%`;
+  const netEl = document.getElementById("mr-net");
+  netEl.textContent = fmtMoney(round2(net));
+  netEl.className = "big " + (net > 0 ? "pos" : (net < 0 ? "neg" : ""));
+
+  if (monthTrades.length){
+    const best = monthTrades.reduce((a,b)=> calcTrade(b).net > calcTrade(a).net ? b : a);
+    const worst = monthTrades.reduce((a,b)=> calcTrade(b).net < calcTrade(a).net ? b : a);
+    document.getElementById("mr-best").textContent = `${fmtMoney(round2(calcTrade(best).net))} (${best.instrument||"—"})`;
+    document.getElementById("mr-worst").textContent = `${fmtMoney(round2(calcTrade(worst).net))} (${worst.instrument||"—"})`;
+  } else {
+    document.getElementById("mr-best").textContent = "—";
+    document.getElementById("mr-worst").textContent = "—";
+  }
+}
+
 function renderAll(){
   renderDashboard();
   renderEquityCurve();
   renderRiskGoals();
   renderHistory();
   renderReasons();
+  renderGradeAnalytics();
   renderMistakeAnalytics();
+  renderMonthlyReport();
 }
 </script>
 </body>
