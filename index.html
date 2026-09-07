@@ -306,8 +306,8 @@
     <div class="modal-box">
       <h3>Risk &amp; goal settings</h3>
       <div class="field" style="margin-bottom:14px;">
-        <label>DAILY LOSS LIMIT (USD, OPTIONAL)</label>
-        <input type="number" id="riskModalDailyLoss" step="0.01" placeholder="e.g. 50.00">
+        <label>DAILY LOSS LIMIT (%, OPTIONAL)</label>
+        <input type="number" id="riskModalDailyLoss" step="0.1" placeholder="e.g. 2">
       </div>
       <div class="field">
         <label>MONTHLY PROFIT TARGET (%, OPTIONAL)</label>
@@ -422,7 +422,8 @@
         </div>
         <div class="field">
           <label>MISTAKE (OPTIONAL)</label>
-          <textarea id="f-mistake"></textarea>
+          <div class="searchbox"><input type="text" id="f-mistake" autocomplete="off" placeholder="e.g. Early Entry"></div>
+          <div class="dropdown-list" id="dd-mistake"></div>
         </div>
       </div>
       <div class="panel" id="livePreview" style="background:var(--panel-2);margin-top:18px;margin-bottom:0;display:none;">
@@ -504,14 +505,16 @@
           <input type="number" id="calc-entry" step="any">
         </div>
         <div class="field">
-          <label>STOP LOSS PRICE</label>
-          <input type="number" id="calc-sl" step="any">
+          <label>STOP LOSS — PRICE (fill this OR pips)</label>
+          <input type="number" id="calc-sl-price" step="any" placeholder="e.g. 3345.50">
+        </div>
+        <div class="field">
+          <label>STOP LOSS — PIPS (fill this OR price)</label>
+          <input type="number" id="calc-sl-pips" step="any" placeholder="e.g. 300">
         </div>
       </div>
+      <div class="sub" id="calc-sl-note" style="margin-top:-6px;margin-bottom:10px;"></div>
       <div class="calc-result" id="calc-result">Suggested lot size: —</div>
-      <div class="form-actions">
-        <button class="btn" id="calc-use">Apply to Add Trade form</button>
-      </div>
     </div>
   </section>
 
@@ -559,7 +562,9 @@ function escapeHtml(s){
 /* ---------------- Fixed option lists ---------------- */
 const TIMEFRAMES = ["1m","3m","5m","15m","30m","1h","2h","4h","1d","1w","1month","3month"];
 const REASONS = ["SBT 1","SBT 2","SBT 3","SBT 4","SBT 5","SBT 6","SBT 7","SBT 8","SBT 9","SBT 10",
-  "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML","Double Top","Double Bottom"];
+  "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML","Double Top","Double Bottom","Gautam Trick"];
+const MISTAKES = ["Directional 123, Not MSS","Zone Break","1 Candle Close","General Demand","General Supply",
+  "Early Entry","Moved SL","SL Positioning Wrong","Structure Wrong Mark","Confusing the Structure","Confusing the Model","Gautam Trick"];
 const INSTRUMENTS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
   "EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD",
@@ -663,6 +668,7 @@ makeSearchable("f-tf","dd-tf",TIMEFRAMES);
 makeSearchable("f-entrytf","dd-entrytf",TIMEFRAMES);
 makeSearchable("f-instrument","dd-instrument",INSTRUMENTS);
 makeSearchable("f-reason","dd-reason",REASONS);
+makeSearchable("f-mistake","dd-mistake",MISTAKES);
 
 /* ---------------- Direction toggle ---------------- */
 let selectedDir = "";
@@ -1014,18 +1020,20 @@ function renderRiskGoals(){
   const dlValueEl = document.getElementById("rg-dailyloss-value");
   const dlBar = document.getElementById("rg-dailyloss-bar");
   const dlNote = document.getElementById("rg-dailyloss-note");
+  const sbForRisk = startingBalance ?? 0;
   const todayStr = new Date().toISOString().slice(0,10);
   const todaysNet = trades.filter(t => t.date === todayStr).reduce((s,t)=>s+calcTrade(t).net, 0);
   const todaysLoss = todaysNet < 0 ? Math.abs(todaysNet) : 0;
+  const todaysLossPct = sbForRisk ? (todaysLoss / sbForRisk) * 100 : 0;
 
-  if (dailyLossLimit === null || dailyLossLimit === undefined){
+  if (dailyLossLimit === null || dailyLossLimit === undefined || !sbForRisk){
     dlValueEl.textContent = "Not set";
     dlBar.style.width = "0%"; dlBar.className = "progress-fill";
-    dlNote.textContent = "Set a limit via the ✏️ icon for a warning when you hit it.";
+    dlNote.textContent = sbForRisk ? "Set a limit via the ✏️ icon for a warning when you hit it." : "Set a starting balance first, then a daily loss limit.";
     dlNote.className = "rg-note";
   } else {
-    const pct = Math.min(100, (todaysLoss / dailyLossLimit) * 100);
-    dlValueEl.textContent = `-$${round2(todaysLoss).toFixed(2)} / $${round2(dailyLossLimit).toFixed(2)}`;
+    const pct = Math.min(100, (todaysLossPct / dailyLossLimit) * 100);
+    dlValueEl.textContent = `${todaysLossPct.toFixed(2)}% of ${dailyLossLimit}% limit (-$${round2(todaysLoss).toFixed(2)})`;
     dlBar.style.width = pct + "%";
     dlBar.className = "progress-fill " + (pct >= 100 ? "danger" : "");
     dlNote.textContent = pct >= 100 ? "⚠ Daily loss limit reached — consider stopping for today." : `${(100-pct).toFixed(0)}% of today's limit remaining.`;
@@ -1161,7 +1169,7 @@ document.querySelector('nav.tabs button[data-tab="calculator"]').addEventListene
   computeSuggestedLot();
 });
 
-["calc-balance","calc-risk","calc-instrument","calc-entry","calc-sl"].forEach(id=>{
+["calc-balance","calc-risk","calc-instrument","calc-entry","calc-sl-price","calc-sl-pips"].forEach(id=>{
   document.getElementById(id).addEventListener("input", computeSuggestedLot);
 });
 
@@ -1171,16 +1179,30 @@ function computeSuggestedLot(){
   const riskPct = parseFloat(document.getElementById("calc-risk").value);
   const instrument = document.getElementById("calc-instrument").value.trim().toUpperCase();
   const entry = parseFloat(document.getElementById("calc-entry").value);
-  const sl = parseFloat(document.getElementById("calc-sl").value);
+  const slPriceRaw = document.getElementById("calc-sl-price").value;
+  const slPipsRaw = document.getElementById("calc-sl-pips").value;
   const resultEl = document.getElementById("calc-result");
+  const noteEl = document.getElementById("calc-sl-note");
 
-  if (!instrument || isNaN(balance) || isNaN(riskPct) || isNaN(entry) || isNaN(sl) || entry === sl){
+  // Whichever of Price / Pips is actually filled in wins — no mode switch needed.
+  // If both are filled, the price field is used since it's the more exact figure.
+  let priceDistance = null;
+  let usedNote = "";
+  if (slPriceRaw !== "" && !isNaN(parseFloat(slPriceRaw)) && !isNaN(entry)){
+    priceDistance = Math.abs(entry - parseFloat(slPriceRaw));
+    usedNote = slPipsRaw !== "" ? "Using SL Price (Pips value ignored since both were filled)." : "";
+  } else if (slPipsRaw !== "" && !isNaN(parseFloat(slPipsRaw)) && instrument){
+    priceDistance = parseFloat(slPipsRaw) * pipSize(instrument);
+    usedNote = "";
+  }
+  noteEl.textContent = usedNote;
+
+  if (!instrument || isNaN(balance) || isNaN(riskPct) || isNaN(entry) || priceDistance === null || priceDistance === 0){
     resultEl.textContent = "Suggested lot size: —";
     suggestedLot = null;
     return;
   }
   const riskAmount = balance * (riskPct/100);
-  const priceDistance = Math.abs(entry - sl);
   const contract = contractSize(instrument);
   const quote = instrument.slice(-3);
   const base = instrument.slice(0,3);
@@ -1198,17 +1220,6 @@ function computeSuggestedLot(){
   suggestedLot = Math.max(0.01, Math.round(lot*100)/100);
   resultEl.textContent = `Suggested lot size: ${suggestedLot} lots (risking $${round2(riskAmount).toFixed(2)})`;
 }
-
-document.getElementById("calc-use").addEventListener("click", ()=>{
-  if (readOnlyMode) return;
-  if (suggestedLot === null){ showToast("✗ Fill in the calculator fields first.", "error"); return; }
-  document.getElementById("f-instrument").value = document.getElementById("calc-instrument").value.trim().toUpperCase();
-  document.getElementById("f-entry").value = document.getElementById("calc-entry").value;
-  document.getElementById("f-lot").value = suggestedLot;
-  document.getElementById("f-lot").dispatchEvent(new Event("input", { bubbles:true }));
-  document.querySelector('nav.tabs button[data-tab="addtrade"]').click();
-  showToast("✓ Instrument, entry & lot size applied — finish the rest of the trade form", "success");
-});
 
 /* ---------------- Export CSV (respects current Trade History filter) ---------------- */
 document.getElementById("exportCsvBtn").addEventListener("click", ()=>{
