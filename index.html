@@ -649,10 +649,19 @@ const VERIFIED_INSTRUMENTS = new Set(INSTRUMENTS);
    genuinely differs between brokers or was found to be mathematically wrong,
    and there was no single reliable default to fall back on. If you need one
    of those instruments, share your broker's exact symbol specification
-   (Contract Size + tick size) and it can be added back in correctly. */
+   (Contract Size + tick size) and it can be added back in correctly.
+
+   Metals pip size note: generic web research initially suggested 0.01 as
+   the "standard" XAUUSD pip, but the user's own real pip-counting habit
+   (confirmed against two independent TradingView measurements — a 76.69
+   move counted as 766 pips, and a 14.59 move as 145 pips) consistently
+   matches 0.1, not 0.01. That's what's used below. This only changes the
+   "Pips" display label and the Position Calculator's pips-mode input — the
+   actual dollar profit/loss math never used pipSize and was independently
+   verified to the cent against the user's real MT5 trade history either way. */
 function pipSize(sym){
   if(sym.slice(-3)==="JPY") return 0.01;                                  // JPY pairs: verified standard
-  if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.01;    // metals: verified standard (broker specs)
+  if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.1;     // metals: matches user's own confirmed pip convention (verified against 2 real TradingView examples)
   if(sym==="USOIL"||sym==="UKOIL") return 0.01;                          // oil: verified standard
   if(sym==="BTCUSDT") return 1;                                          // crypto: verified standard (1 lot = 1 coin)
   return 0.0001;                                                         // forex majors: verified standard
