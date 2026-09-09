@@ -1371,14 +1371,34 @@ function computeSuggestedLot(){
   else if (base === "USD") usdconv = 1/entry;
   else if (quote === "JPY") usdconv = 1/entry;
 
-  const lot = riskAmount / (priceDistance * contract * usdconv);
-  if (!isFinite(lot) || lot <= 0){
+  const rawLot = riskAmount / (priceDistance * contract * usdconv);
+  if (!isFinite(rawLot) || rawLot <= 0){
     resultEl.textContent = "Suggested lot size: —";
     suggestedLot = null;
     return;
   }
-  suggestedLot = Math.max(0.01, Math.round(lot*100)/100);
-  resultEl.textContent = `Suggested lot size: ${suggestedLot} lots (risking $${round2(riskAmount).toFixed(2)})`;
+
+  // Always ROUND DOWN (floor) to the broker's 0.01 lot step — this guarantees
+  // the real risk taken is never more than what you asked for, only ever
+  // slightly less. Rounding to the nearest 0.01 instead could push the real
+  // risk above your intended %, which is the wrong direction for risk control.
+  const flooredLot = Math.floor(rawLot*100)/100;
+  suggestedLot = Math.max(0.01, flooredLot);
+
+  // The actual $ risk at this exact lot size (after rounding) — this can
+  // differ slightly from riskAmount above once the lot is rounded to a real
+  // tradable size, so always show the true number rather than the theoretical one.
+  const actualRisk = suggestedLot * priceDistance * contract * usdconv;
+
+  if (flooredLot < 0.01){
+    // The ideal lot was smaller than any broker allows (min 0.01) — using the
+    // minimum means the real risk taken is HIGHER than what was asked for.
+    resultEl.innerHTML = `Suggested lot size: ${suggestedLot} lots<br>` +
+      `<span style="color:var(--loss);font-size:14px;">⚠ Your ideal lot (${rawLot.toFixed(4)}) is below the broker's 0.01 minimum — ` +
+      `using 0.01 means you'll actually risk $${round2(actualRisk).toFixed(2)}, not the $${round2(riskAmount).toFixed(2)} you asked for.</span>`;
+  } else {
+    resultEl.textContent = `Suggested lot size: ${suggestedLot} lots (risking $${round2(actualRisk).toFixed(2)})`;
+  }
 }
 
 /* ---------------- Export CSV (respects current Trade History filter) ---------------- */
