@@ -45,7 +45,8 @@
     font-family:'Spectral',serif;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 90px;}
+  #bgCanvas{position:fixed;inset:0;z-index:0;display:block;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 28px 90px;}
 
   header{
     display:flex;
@@ -87,9 +88,19 @@
   .tabpane.active{display:block;}
 
   /* Summary cards */
-  .cards{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);margin-bottom:36px;}
-  .card{padding:20px 18px;border-right:1px solid var(--line);position:relative;}
-  .card:last-child{border-right:none;}
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:36px;}
+  .card{
+    padding:20px 18px;position:relative;border-radius:10px;
+    background:color-mix(in srgb, var(--panel) 55%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 18%, transparent);
+    backdrop-filter:blur(10px);
+    box-shadow:0 6px 18px rgba(0,0,0,0.22);
+    transition:transform .15s ease, box-shadow .15s ease;
+    transform-style:preserve-3d;
+  }
+  .card:hover{
+    box-shadow:0 16px 32px rgba(0,0,0,0.3), 0 0 0 1px color-mix(in srgb, var(--gold) 35%, transparent);
+  }
   .card .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;margin-bottom:8px;}
   .card .value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
   .card .value.pos{color:var(--win);}
@@ -110,7 +121,13 @@
   .modal-box{background:var(--panel);border:1px solid var(--gold-soft);padding:26px;width:340px;max-width:100%;}
   .modal-box h3{margin:0 0 16px;font-size:16px;font-weight:600;}
 
-  .panel{border:1px solid var(--line);background:var(--panel);padding:22px;margin-bottom:28px;}
+  .panel{
+    border:1px solid color-mix(in srgb, var(--gold) 14%, transparent);
+    background:color-mix(in srgb, var(--panel) 55%, transparent);
+    backdrop-filter:blur(10px);
+    padding:22px;margin-bottom:28px;border-radius:10px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.18);
+  }
   .panel h3{margin:0 0 16px;font-size:16px;font-weight:600;}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .balance-edit input{width:140px;}
@@ -266,6 +283,7 @@
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
 <div class="wrap">
 
   <header>
@@ -1464,6 +1482,7 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
   function apply(theme){
     document.documentElement.setAttribute("data-theme", theme);
     btn.textContent = theme === "light" ? "☀️ Light" : "🌙 Dark";
+    document.getElementById("bgCanvas").style.display = theme === "light" ? "none" : "block";
   }
   let saved = "dark";
   try { saved = localStorage.getItem("myTradingOsTheme") || "dark"; } catch(e){}
@@ -1475,6 +1494,93 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
     try { localStorage.setItem("myTradingOsTheme", next); } catch(e){}
   });
 })();
+
+/* ---------------- Constellation-network background (dark theme only) ---------------- */
+(function initBackground(){
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d");
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const COUNT = 60;
+  const LINK_DIST = 140;
+  const GOLD = [201, 162, 75];
+  const nodes = [];
+  for (let i=0;i<COUNT;i++){
+    nodes.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      vx: (Math.random()-0.5)*0.2,
+      vy: (Math.random()-0.5)*0.2,
+      r: Math.random()*1.4 + 0.6,
+      glow: Math.random() < 0.12
+    });
+  }
+
+  let running = true;
+  document.addEventListener("visibilitychange", ()=>{ running = !document.hidden; if (running) requestAnimationFrame(tick); });
+
+  function tick(){
+    if (!running) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    for (let i=0;i<COUNT;i++){
+      const n = nodes[i];
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    }
+
+    for (let i=0;i<COUNT;i++){
+      for (let j=i+1;j<COUNT;j++){
+        const dx = nodes[i].x-nodes[j].x, dy = nodes[i].y-nodes[j].y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if (dist < LINK_DIST){
+          const op = (1 - dist/LINK_DIST) * 0.18;
+          ctx.strokeStyle = `rgba(${GOLD.join(',')},${op})`;
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    nodes.forEach(n=>{
+      if (n.glow){
+        const grad = ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,9);
+        grad.addColorStop(0, `rgba(${GOLD.join(',')},0.4)`);
+        grad.addColorStop(1, `rgba(${GOLD.join(',')},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 9, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.fillStyle = `rgba(${GOLD.join(',')},0.75)`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ---------------- Card 3D tilt-on-hover (dashboard summary cards only) ---------------- */
+document.querySelectorAll(".cards .card").forEach(card=>{
+  card.addEventListener("mousemove", e=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left)/r.width - 0.5;
+    const y = (e.clientY - r.top)/r.height - 0.5;
+    card.style.transform = `perspective(600px) rotateX(${-y*7}deg) rotateY(${x*7}deg) translateY(-3px)`;
+  });
+  card.addEventListener("mouseleave", ()=>{
+    card.style.transform = "perspective(600px) rotateX(0) rotateY(0) translateY(0)";
+  });
+});
 
 initApp();
 
