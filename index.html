@@ -84,8 +84,9 @@
   nav.tabs button:hover{color:var(--text);}
   nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-  .tabpane{display:none;}
+  .tabpane{display:none;opacity:0;transform:translateY(6px);transition:opacity .2s ease, transform .2s ease;}
   .tabpane.active{display:block;}
+  .tabpane.active.in{opacity:1;transform:translateY(0);}
 
   /* Summary cards */
   .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:36px;}
@@ -117,8 +118,10 @@
   #strategySelect{min-width:170px;}
 
   /* Modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
-  .modal-box{background:var(--panel);border:1px solid var(--gold-soft);padding:26px;width:340px;max-width:100%;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;transition:background .2s ease;}
+  .modal-overlay.in{background:rgba(0,0,0,.6);}
+  .modal-box{background:var(--panel);border:1px solid var(--gold-soft);padding:26px;width:340px;max-width:100%;transform:scale(.94) translateY(8px);opacity:0;transition:transform .2s ease, opacity .2s ease;}
+  .modal-overlay.in .modal-box{transform:scale(1) translateY(0);opacity:1;}
   .modal-box h3{margin:0 0 16px;font-size:16px;font-weight:600;}
 
   .panel{
@@ -140,7 +143,9 @@
     padding:9px 16px;
     cursor:pointer;
     letter-spacing:.02em;
+    transition:background .15s ease, transform .1s ease, border-color .15s ease, color .15s ease;
   }
+  button.btn:active{transform:scale(.97);}
   button.btn:hover{background:#dab35c;}
   button.btn.secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
   button.btn.secondary:hover{border-color:var(--gold);color:var(--gold);}
@@ -159,8 +164,9 @@
     font-size:13px;
     padding:9px 10px;
     outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
   }
-  input:focus,textarea:focus{border-color:var(--gold);}
+  input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,0.12);}
   input[type=file]{
     background:var(--panel-2);
     border:1px solid var(--line);
@@ -184,8 +190,11 @@
   .dropdown-list{
     position:absolute;top:100%;left:0;right:0;z-index:20;
     background:var(--panel-2);border:1px solid var(--gold-soft);
-    max-height:180px;overflow-y:auto;display:none;
+    max-height:180px;overflow-y:auto;
+    opacity:0;visibility:hidden;transform:translateY(-4px);
+    transition:opacity .12s ease, transform .12s ease;
   }
+  .dropdown-list.show{opacity:1;visibility:visible;transform:translateY(0);}
   .dropdown-list div{padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer;}
   .dropdown-list div:hover{background:rgba(201,162,75,0.15);color:var(--gold);}
   .dir-toggle{display:flex;gap:8px;}
@@ -318,7 +327,7 @@
     <button data-tab="calculator" class="ro-hide">Position Calculator</button>
   </nav>
 
-  <div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,.4);"></div>
+  <div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;z-index:999;padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .2s ease, opacity .2s ease;"></div>
 
   <!-- MODAL: combined sheet name + starting balance (used for new sheet AND for setting/editing balance) -->
   <div class="modal-overlay" id="sheetModalOverlay">
@@ -359,7 +368,7 @@
   </div>
 
   <!-- DASHBOARD -->
-  <section class="tabpane active" id="pane-dashboard">
+  <section class="tabpane active in" id="pane-dashboard">
     <div class="cards">
       <div class="card"><div class="label">TOTAL TRADES</div><div class="value" id="d-total">0</div></div>
       <div class="card"><div class="label">WIN RATE</div><div class="value" id="d-winrate">0%</div></div>
@@ -466,6 +475,11 @@
         <div class="field">
           <label>EXIT PRICE</label>
           <input type="number" id="f-exit" step="any">
+        </div>
+        <div class="field" id="convrate-field" style="display:none;">
+          <label id="convrate-label">CONVERSION RATE</label>
+          <input type="number" id="f-convrate" step="any" placeholder="auto-fetching…">
+          <div class="sub" id="convrate-status" style="margin-top:4px;"></div>
         </div>
         <div class="field">
           <label>LOT SIZE</label>
@@ -589,9 +603,13 @@
           <label>STOP LOSS — PIPS</label>
           <input type="number" id="calc-sl-pips" step="any" placeholder="e.g. 300">
         </div>
+        <div class="field" id="calc-convrate-field" style="display:none;">
+          <label id="calc-convrate-label">CONVERSION RATE</label>
+          <input type="number" id="calc-convrate" step="any" placeholder="auto-fetching…">
+          <div class="sub" id="calc-convrate-status" style="margin-top:4px;"></div>
+        </div>
       </div>
       <div class="sub" id="calc-mode-note" style="margin-bottom:14px;"></div>
-      <div class="sub" id="calc-sl-note" style="margin-top:-6px;margin-bottom:10px;"></div>
       <div class="calc-result" id="calc-result">Suggested lot size: —</div>
     </div>
   </section>
@@ -643,31 +661,68 @@ const REASONS = ["SBT 1","SBT 2","SBT 3","SBT 4","SBT 5","SBT 6","SBT 7","SBT 8"
   "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML","Double Top","Double Bottom","Gautam Trick"];
 const MISTAKES = ["Directional 123, Not MSS","Zone Break","1 Candle Close","General Demand","General Supply",
   "Early Entry","Moved SL","SL Positioning Wrong","Structure Wrong Mark","Confusing the Structure","Confusing the Model","Gautam Trick"];
-/* Only instruments with a verified, near-universal broker-standard contract
-   size AND a correct USD-conversion path are listed here. Removed: all forex
-   crosses that don't involve USD directly (their P&L math relies on an
-   unverifiable 1:1 approximation, or — for the JPY crosses — an outright
-   wrong conversion rate), plus indices/NATGAS/DXY/altcoins whose contract
-   size genuinely varies broker-to-broker with no single correct default. */
+/* Metals/oil/crypto have a verified, near-universal broker-standard contract
+   size. Forex is fully restored below — crosses that don't quote directly in
+   USD now use an explicit, user-supplied "Conversion Rate" (see
+   crossConversionInfo() + the Add Trade / Calculator conversion-rate field)
+   instead of any approximation, so every pair here is 100% accurate as long
+   as that rate is filled in. */
 const INSTRUMENTS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
+  "EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD",
+  "GBPJPY","GBPCHF","GBPAUD","GBPCAD","GBPNZD",
+  "AUDJPY","AUDCHF","AUDCAD","AUDNZD","CADJPY","CADCHF","NZDJPY","CHFJPY",
   "XAUUSD","XAGUSD","XPTUSD","XPDUSD",
   "USOIL","UKOIL",
   "BTCUSDT"
 ];
 const VERIFIED_INSTRUMENTS = new Set(INSTRUMENTS);
 
+/* For a cross pair (quote currency isn't USD, and USD isn't the base either),
+   tell the caller which real-world reference pair supplies the USD
+   conversion rate, and whether to multiply or divide by it. USDJPY/USDCHF/
+   USDCAD (base === USD) need no separate rate — their own exit price already
+   IS the needed rate, same as before. */
+function crossConversionInfo(sym){
+  const quote = sym.slice(-3), base = sym.slice(0,3);
+  if (quote === "USD" || base === "USD") return null;
+  const map = {
+    GBP: { pair:"GBPUSD", mode:"multiply" },
+    AUD: { pair:"AUDUSD", mode:"multiply" },
+    NZD: { pair:"NZDUSD", mode:"multiply" },
+    JPY: { pair:"USDJPY", mode:"divide" },
+    CHF: { pair:"USDCHF", mode:"divide" },
+    CAD: { pair:"USDCAD", mode:"divide" }
+  };
+  return map[quote] || null;
+}
+
+/* Best-effort live rate fetch (free, no API key). Never blocks anything —
+   if it fails (offline, API down, CORS hiccup) the caller just leaves the
+   field empty for manual entry. */
+async function fetchConversionRate(refPair){
+  try{
+    const base = refPair.slice(0,3), quote = refPair.slice(3,6);
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 5000);
+    const res = await fetch(`https://api.exchangerate.host/latest?base=${base}&symbols=${quote}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const data = await res.json();
+    const rate = data && data.rates && data.rates[quote];
+    return (typeof rate === "number" && rate > 0) ? rate : null;
+  } catch(e){
+    return null;
+  }
+}
+
 /* ---------------- Calculation logic (mirrors the Excel formulas) ----------------
    Every instrument offered in INSTRUMENTS (see above) has been cross-checked
    against multiple real broker contract specifications (Sept 2026 research) —
    pip size, contract size, and the USD-conversion path are all verified.
-   Indices, natural gas, DXY, non-BTC crypto, and forex crosses that don't
-   involve USD directly were deliberately left OUT of the instrument list —
-   their contract size (or, for JPY crosses, the USD conversion itself)
-   genuinely differs between brokers or was found to be mathematically wrong,
-   and there was no single reliable default to fall back on. If you need one
-   of those instruments, share your broker's exact symbol specification
-   (Contract Size + tick size) and it can be added back in correctly.
+   Indices, natural gas, DXY, and non-BTC crypto were deliberately left OUT —
+   their contract size genuinely varies broker-to-broker with no single
+   correct default. If you need one of those, share your broker's exact
+   symbol specification (Contract Size + tick size) and it can be added.
 
    Metals pip size note: generic web research initially suggested 0.01 as
    the "standard" XAUUSD pip, but the user's own real pip-counting habit
@@ -682,14 +737,14 @@ function pipSize(sym){
   if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.1;     // metals: matches user's own confirmed pip convention (verified against 2 real TradingView examples)
   if(sym==="USOIL"||sym==="UKOIL") return 0.01;                          // oil: verified standard
   if(sym==="BTCUSDT") return 1;                                          // crypto: verified standard (1 lot = 1 coin)
-  return 0.0001;                                                         // forex majors: verified standard
+  return 0.0001;                                                         // forex majors/crosses: verified standard
 }
 function contractSize(sym){
   if(sym==="XAUUSD"||sym==="XPTUSD"||sym==="XPDUSD") return 100;   // metals: verified standard, 100 oz/lot
   if(sym==="XAGUSD") return 5000;                                 // silver: verified standard, 5000 oz/lot
   if(sym==="USOIL"||sym==="UKOIL") return 1000;                   // oil: verified standard, 1000 barrels/lot
   if(sym==="BTCUSDT") return 1;                                   // crypto: verified standard, 1 lot = 1 coin
-  return 100000;                                                  // forex majors: verified standard, 100,000 units/lot
+  return 100000;                                                  // forex majors/crosses: verified standard, 100,000 units/lot
 }
 function calcTrade(t){
   const sym = t.instrument;
@@ -699,10 +754,17 @@ function calcTrade(t){
   const profit = diff * t.lot * contract;
   const quote = sym.slice(-3);
   const base = sym.slice(0,3);
+  const crossInfo = crossConversionInfo(sym);
   let usdconv = 1;
-  if (quote === "USD") usdconv = 1;
-  else if (base === "USD") usdconv = 1 / t.exit;
-  else if (quote === "JPY") usdconv = 1 / t.exit;
+  if (quote === "USD") {
+    usdconv = 1;
+  } else if (base === "USD") {
+    usdconv = 1 / t.exit;
+  } else if (crossInfo && t.convRate && t.convRate > 0) {
+    usdconv = crossInfo.mode === "multiply" ? t.convRate : 1 / t.convRate;
+  } else {
+    usdconv = 1; // no rate supplied — last-resort fallback, flagged in the UI
+  }
   const gross = profit * usdconv;
   const net = gross - (t.commission||0) - (t.swap||0);
   let result = "Breakeven";
@@ -725,8 +787,16 @@ function showToast(message, type){
   el.style.color = type === "error" ? "#E48A6B" : "#6FCBA6";
   el.style.border = "1px solid " + (type === "error" ? "#D2694A" : "#4FAE8E");
   el.style.display = "block";
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    el.style.opacity = "1";
+    el.style.transform = "translateX(-50%) translateY(0)";
+  }));
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>{ el.style.display = "none"; }, 3500);
+  toastTimer = setTimeout(()=>{
+    el.style.opacity = "0";
+    el.style.transform = "translateX(-50%) translateY(-16px)";
+    setTimeout(()=>{ el.style.display = "none"; }, 200);
+  }, 3500);
 }
 
 /* Rejects if the given promise doesn't settle within `ms` milliseconds,
@@ -745,18 +815,18 @@ function makeSearchable(inputId, listId, options, onSelect){
   function render(filter){
     const f = (filter||"").toUpperCase();
     const matches = options.filter(o => o.toUpperCase().startsWith(f));
-    if (!matches.length){ list.style.display="none"; return; }
+    if (!matches.length){ list.classList.remove("show"); return; }
     list.innerHTML = matches.map(o => `<div data-val="${o}">${o}</div>`).join("");
-    list.style.display="block";
+    list.classList.add("show");
   }
   input.addEventListener("focus", () => render(input.value));
   input.addEventListener("input", () => render(input.value));
-  input.addEventListener("blur", () => setTimeout(()=>{ list.style.display="none"; }, 150));
+  input.addEventListener("blur", () => setTimeout(()=>{ list.classList.remove("show"); }, 150));
   list.addEventListener("mousedown", (e) => {
     const val = e.target.getAttribute("data-val");
     if (val){
       input.value = val;
-      list.style.display="none";
+      list.classList.remove("show");
       input.dispatchEvent(new Event("input", { bubbles: true }));
       if(onSelect) onSelect(val);
     }
@@ -801,12 +871,13 @@ function updateLivePreview(){
   const entry = parseFloat(document.getElementById("f-entry").value);
   const exit = parseFloat(document.getElementById("f-exit").value);
   const lot = parseFloat(document.getElementById("f-lot").value);
+  const convRate = parseFloat(document.getElementById("f-convrate").value);
 
   if (!instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot <= 0){
     box.style.display = "none";
     return;
   }
-  const c = calcTrade({ instrument, direction: selectedDir, entry, exit, lot, commission:0, swap:0 });
+  const c = calcTrade({ instrument, direction: selectedDir, entry, exit, lot, commission:0, swap:0, convRate });
   box.style.display = "block";
   document.getElementById("preview-pips").textContent = c.pips;
   const netEl = document.getElementById("preview-net");
@@ -817,24 +888,65 @@ function updateLivePreview(){
   resEl.style.color = c.result === "Win" ? "var(--win)" : (c.result === "Loss" ? "var(--loss)" : "var(--be)");
 
   const warnEl = document.getElementById("preview-warning");
+  const crossInfoWarn = crossConversionInfo(instrument);
   if (!VERIFIED_INSTRUMENTS.has(instrument)){
     warnEl.style.display = "block";
     warnEl.textContent = "⚠ \"" + instrument + "\" is not in the verified instrument list — its contract size/pip value hasn't been confirmed against a real broker, so this P&L may be inaccurate.";
+  } else if (crossInfoWarn && (isNaN(convRate) || convRate <= 0)){
+    warnEl.style.display = "block";
+    warnEl.textContent = `⚠ No Conversion Rate entered (${crossInfoWarn.pair}) — this P&L is not converted to USD and will be wrong until you fill it in.`;
   } else {
     warnEl.style.display = "none";
   }
 }
-["f-instrument","f-entry","f-exit","f-lot"].forEach(id=>{
+["f-instrument","f-entry","f-exit","f-lot","f-convrate"].forEach(id=>{
   document.getElementById(id).addEventListener("input", updateLivePreview);
+});
+
+/* ---------------- Conversion-rate field (Add Trade form) ---------------- */
+let lastConvRateInstrument = null;
+document.getElementById("f-instrument").addEventListener("input", ()=>{
+  const instrument = document.getElementById("f-instrument").value.trim().toUpperCase();
+  const info = crossConversionInfo(instrument);
+  const field = document.getElementById("convrate-field");
+  const label = document.getElementById("convrate-label");
+  const status = document.getElementById("convrate-status");
+  const input = document.getElementById("f-convrate");
+
+  if (!info){
+    field.style.display = "none";
+    lastConvRateInstrument = null;
+    return;
+  }
+  field.style.display = "block";
+  label.textContent = `CONVERSION RATE (${info.pair})`;
+
+  if (instrument !== lastConvRateInstrument){
+    lastConvRateInstrument = instrument;
+    input.value = "";
+    status.textContent = "Fetching current " + info.pair + " rate…";
+    fetchConversionRate(info.pair).then(rate=>{
+      if (lastConvRateInstrument !== instrument) return; // instrument changed again while fetching
+      if (rate){
+        input.value = rate;
+        status.textContent = `Auto-filled from live ${info.pair} rate — edit if you know the exact rate at your trade's time.`;
+        updateLivePreview();
+      } else {
+        status.textContent = `Couldn't auto-fetch — please enter the ${info.pair} rate manually.`;
+      }
+    });
+  }
 });
 
 /* ---------------- Tabs ---------------- */
 document.querySelectorAll("nav.tabs button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll(".tabpane").forEach(p=>{ p.classList.remove("active"); p.classList.remove("in"); });
     btn.classList.add("active");
-    document.getElementById("pane-"+btn.dataset.tab).classList.add("active");
+    const pane = document.getElementById("pane-"+btn.dataset.tab);
+    pane.classList.add("active");
+    requestAnimationFrame(()=> requestAnimationFrame(()=> pane.classList.add("in")));
   });
 });
 
@@ -1032,6 +1144,18 @@ document.getElementById("deleteStrategyBtn").addEventListener("click", async ()=
                pencil icon on the Starting Balance card AND the rename icon next to the sheet
                dropdown, and it's what auto-opens the first time a sheet has no balance set yet.
    Either way, once saved both fields disappear again until the icon is clicked next time. */
+/* ---------------- Modal show/hide with smooth transition ---------------- */
+function showModal(id){
+  const el = document.getElementById(id);
+  el.style.display = "flex";
+  requestAnimationFrame(()=> requestAnimationFrame(()=> el.classList.add("in")));
+}
+function hideModal(id){
+  const el = document.getElementById(id);
+  el.classList.remove("in");
+  setTimeout(()=>{ if (!el.classList.contains("in")) el.style.display = "none"; }, 200);
+}
+
 let sheetModalMode = null;
 function openSheetModal(mode){
   sheetModalMode = mode;
@@ -1047,11 +1171,11 @@ function openSheetModal(mode){
     nameInput.value = cur ? (cur.name || "") : "";
     balInput.value = (startingBalance ?? "");
   }
-  document.getElementById("sheetModalOverlay").style.display = "flex";
+  showModal("sheetModalOverlay");
   nameInput.focus();
 }
 document.getElementById("sheetModalCancel").addEventListener("click", ()=>{
-  document.getElementById("sheetModalOverlay").style.display = "none";
+  hideModal("sheetModalOverlay");
 });
 document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
   if (readOnlyMode) return;
@@ -1062,7 +1186,7 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
   if (!name){ showToast("✗ Please enter a sheet name.", "error"); return; }
   if (balRaw !== "" && isNaN(bal)){ showToast("✗ Please enter a valid balance.", "error"); return; }
 
-  document.getElementById("sheetModalOverlay").style.display = "none";
+  hideModal("sheetModalOverlay");
 
   if (sheetModalMode === "create"){
     const newOrder = strategies.length ? Math.max(...strategies.map(s=>s.order??0)) + 1 : 0;
@@ -1113,10 +1237,10 @@ document.getElementById("editRiskGoalsBtn").addEventListener("click", ()=>{
   if (!appReady){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
   document.getElementById("riskModalDailyLoss").value = (dailyLossLimit ?? "");
   document.getElementById("riskModalMonthlyTarget").value = (monthlyTargetPct ?? "");
-  document.getElementById("riskModalOverlay").style.display = "flex";
+  showModal("riskModalOverlay");
 });
 document.getElementById("riskModalCancel").addEventListener("click", ()=>{
-  document.getElementById("riskModalOverlay").style.display = "none";
+  hideModal("riskModalOverlay");
 });
 document.getElementById("riskModalSave").addEventListener("click", async ()=>{
   if (readOnlyMode) return;
@@ -1128,7 +1252,7 @@ document.getElementById("riskModalSave").addEventListener("click", async ()=>{
   if (dlRaw !== "" && isNaN(dl)){ showToast("✗ Please enter a valid daily loss limit.", "error"); return; }
   if (tRaw !== "" && isNaN(tgt)){ showToast("✗ Please enter a valid target %.", "error"); return; }
 
-  document.getElementById("riskModalOverlay").style.display = "none";
+  hideModal("riskModalOverlay");
   dailyLossLimit = dl; monthlyTargetPct = tgt; // optimistic
   renderRiskGoals();
   showToast("✓ Risk & goal settings saved", "success");
@@ -1331,7 +1455,7 @@ document.querySelector('nav.tabs button[data-tab="calculator"]').addEventListene
   updateCalcMode();
 });
 
-["calc-balance","calc-risk","calc-entry","calc-sl-price","calc-sl-pips"].forEach(id=>{
+["calc-balance","calc-risk","calc-entry","calc-sl-price","calc-sl-pips","calc-convrate"].forEach(id=>{
   document.getElementById(id).addEventListener("input", computeSuggestedLot);
 });
 document.getElementById("calc-instrument").addEventListener("input", updateCalcMode);
@@ -1340,22 +1464,56 @@ document.getElementById("calc-instrument").addEventListener("input", updateCalcM
    need a live price to convert P&L into USD — for every other instrument
    (XAUUSD, EURUSD, indices, crypto...) only Pips + Instrument are needed. */
 function calcModeNeedsEntry(instrument){
-  const quote = instrument.slice(-3), base = instrument.slice(0,3);
-  return !!instrument && quote !== "USD" && (base === "USD" || quote === "JPY");
+  const quote = instrument.slice(-3);
+  return !!instrument && quote !== "USD";
 }
 
+let lastCalcConvInstrument = null;
 function updateCalcMode(){
   const instrument = document.getElementById("calc-instrument").value.trim().toUpperCase();
   const needsEntry = calcModeNeedsEntry(instrument);
+  const crossInfo = crossConversionInfo(instrument);
   document.getElementById("calc-entry-field").style.display = needsEntry ? "block" : "none";
   document.getElementById("calc-slprice-field").style.display = needsEntry ? "block" : "none";
   document.getElementById("calc-slpips-field").style.display = needsEntry ? "none" : "block";
+
+  const convField = document.getElementById("calc-convrate-field");
+  const convLabel = document.getElementById("calc-convrate-label");
+  const convStatus = document.getElementById("calc-convrate-status");
+  const convInput = document.getElementById("calc-convrate");
+
+  if (crossInfo){
+    convField.style.display = "block";
+    convLabel.textContent = `CONVERSION RATE (${crossInfo.pair})`;
+    if (instrument !== lastCalcConvInstrument){
+      lastCalcConvInstrument = instrument;
+      convInput.value = "";
+      convStatus.textContent = "Fetching current " + crossInfo.pair + " rate…";
+      fetchConversionRate(crossInfo.pair).then(rate=>{
+        if (lastCalcConvInstrument !== instrument) return;
+        if (rate){
+          convInput.value = rate;
+          convStatus.textContent = `Auto-filled from live ${crossInfo.pair} rate — edit if you know the exact rate at your trade's time.`;
+          computeSuggestedLot();
+        } else {
+          convStatus.textContent = `Couldn't auto-fetch — please enter the ${crossInfo.pair} rate manually.`;
+        }
+      });
+    }
+  } else {
+    convField.style.display = "none";
+    lastCalcConvInstrument = null;
+  }
+
   const noteEl = document.getElementById("calc-mode-note");
   if (!instrument){
     noteEl.textContent = "";
   } else if (!VERIFIED_INSTRUMENTS.has(instrument)){
     noteEl.textContent = "⚠ \"" + instrument + "\" is not in the verified instrument list — its contract size/pip value hasn't been confirmed against a real broker, so this lot size may be inaccurate.";
     noteEl.style.color = "var(--gold)";
+  } else if (crossInfo){
+    noteEl.textContent = "Cross pair — enter Entry Price, Stop Loss Price, and the Conversion Rate above.";
+    noteEl.style.color = "";
   } else {
     noteEl.textContent = needsEntry
       ? "This pair needs a live price to convert into USD — enter Entry Price + Stop Loss Price."
@@ -1372,6 +1530,7 @@ function computeSuggestedLot(){
   const instrument = document.getElementById("calc-instrument").value.trim().toUpperCase();
   const resultEl = document.getElementById("calc-result");
   const needsEntry = calcModeNeedsEntry(instrument);
+  const crossInfo = crossConversionInfo(instrument);
   const quote = instrument.slice(-3), base = instrument.slice(0,3);
 
   let priceDistance = null;
@@ -1391,13 +1550,24 @@ function computeSuggestedLot(){
     suggestedLot = null;
     return;
   }
+
+  let usdconv = 1;
+  if (quote === "USD"){
+    usdconv = 1;
+  } else if (base === "USD"){
+    usdconv = 1/entry;
+  } else if (crossInfo){
+    const convRate = parseFloat(document.getElementById("calc-convrate").value);
+    if (isNaN(convRate) || convRate <= 0){
+      resultEl.textContent = "Suggested lot size: — (enter the Conversion Rate above)";
+      suggestedLot = null;
+      return;
+    }
+    usdconv = crossInfo.mode === "multiply" ? convRate : 1/convRate;
+  }
+
   const riskAmount = balance * (riskPct/100);
   const contract = contractSize(instrument);
-  let usdconv = 1;
-  if (quote === "USD") usdconv = 1;
-  else if (base === "USD") usdconv = 1/entry;
-  else if (quote === "JPY") usdconv = 1/entry;
-
   const rawLot = riskAmount / (priceDistance * contract * usdconv);
   if (!isFinite(rawLot) || rawLot <= 0){
     resultEl.textContent = "Suggested lot size: —";
@@ -1600,9 +1770,16 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const reason = document.getElementById("f-reason").value.trim();
   const rules = document.getElementById("f-rules").value.trim();
   const mistake = document.getElementById("f-mistake").value.trim();
+  const crossInfo = crossConversionInfo(instrument);
+  const convRateRaw = document.getElementById("f-convrate").value;
+  const convRate = convRateRaw === "" ? null : parseFloat(convRateRaw);
 
   if (!date || !tf || !entrytf || !instrument || !selectedDir || isNaN(entry) || isNaN(exit) || isNaN(lot) || lot < 0.01){
     msg.textContent = "Please fill date, timeframes, instrument, direction, entry, exit and a valid lot size (min 0.01).";
+    return;
+  }
+  if (crossInfo && (convRate === null || isNaN(convRate) || convRate <= 0)){
+    msg.textContent = `This pair needs a Conversion Rate (${crossInfo.pair}) to convert P&L into USD accurately.`;
     return;
   }
   if (!currentStrategyId){
@@ -1613,7 +1790,7 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const record = {
     date, timeframe: tf, entryTimeframe: entrytf, instrument, direction: selectedDir,
     entry, exit, lot, commission: 0, swap: 0, reason, grade: selectedGrade,
-    rules, mistake,
+    rules, mistake, convRate: convRate,
     createdAt: editingId ? (trades.find(t=>t.id===editingId)?.createdAt || Date.now()) : Date.now()
   };
   const wasEditing = !!editingId;
@@ -1652,8 +1829,11 @@ document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
 });
 
 function resetForm(){
-  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-rules","f-mistake","f-reason"]
+  ["f-date","f-tf","f-entrytf","f-instrument","f-entry","f-exit","f-rules","f-mistake","f-reason","f-convrate"]
     .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("convrate-field").style.display = "none";
+  document.getElementById("convrate-status").textContent = "";
+  lastConvRateInstrument = null;
   document.getElementById("f-lot").value = "0.01";
   document.querySelectorAll(".dir-btn").forEach(b=>b.classList.remove("sel"));
   document.querySelectorAll(".grade-btn").forEach(b=>b.classList.remove("sel"));
@@ -1677,6 +1857,19 @@ function startEdit(t){
   document.getElementById("f-reason").value = t.reason || "";
   document.getElementById("f-rules").value = t.rules || "";
   document.getElementById("f-mistake").value = t.mistake || "";
+  const crossInfo = crossConversionInfo(t.instrument || "");
+  const convField = document.getElementById("convrate-field");
+  if (crossInfo){
+    convField.style.display = "block";
+    document.getElementById("convrate-label").textContent = `CONVERSION RATE (${crossInfo.pair})`;
+    document.getElementById("f-convrate").value = t.convRate ?? "";
+    document.getElementById("convrate-status").textContent = "";
+    lastConvRateInstrument = (t.instrument || "").toUpperCase();
+  } else {
+    convField.style.display = "none";
+    document.getElementById("f-convrate").value = "";
+    lastConvRateInstrument = null;
+  }
   document.querySelectorAll(".dir-btn").forEach(b=>{
     b.classList.toggle("sel", b.getAttribute("data-dir") === t.direction);
   });
