@@ -6,7 +6,7 @@
 <title>My Trading OS — Journal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Playfair+Display:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#12141A;
@@ -21,6 +21,7 @@
     --win:#4FAE8E;
     --loss:#D2694A;
     --be:#B7A15C;
+    --font-body:'Spectral',serif;
   }
   html[data-theme="light"]{
     --bg:#F5F2EA;
@@ -42,7 +43,7 @@
     margin:0;
     background:var(--bg);
     color:var(--text);
-    font-family:'Spectral',serif;
+    font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;
   }
   .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 28px 90px;}
@@ -113,6 +114,7 @@
   .strategy-bar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .strategy-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.03em;}
   .icon-btn{background:none;border:1px solid var(--line);color:var(--text-dim);cursor:pointer;padding:7px 10px;font-size:12px;}
+  #fontPickerBtn{background:var(--panel-2);color:var(--text);font-family:'IBM Plex Mono',monospace;outline:none;}
   .icon-btn:hover{border-color:var(--gold);color:var(--gold);}
   #strategySelect{min-width:170px;}
 
@@ -157,9 +159,9 @@
     background:color-mix(in srgb, var(--panel-2) 65%, transparent);
     border:1px solid color-mix(in srgb, var(--gold) 12%, transparent);
     border-radius:8px;padding:16px;margin-bottom:14px;
-    transition:border-color .15s ease, box-shadow .15s ease;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;
   }
-  .subcard:hover{border-color:color-mix(in srgb, var(--gold) 28%, transparent);box-shadow:0 4px 14px rgba(0,0,0,.15);}
+  .subcard:hover{border-color:color-mix(in srgb, var(--gold) 28%, transparent);box-shadow:0 8px 20px rgba(0,0,0,.2);transform:translateY(-2px);}
   .subcard-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase;}
   .subcard .form-grid{gap:14px;}
   .subcard .form-grid:last-child{margin-bottom:0;}
@@ -195,7 +197,7 @@
     margin-right:10px;
   }
   .thumb{width:44px;height:44px;object-fit:cover;border:1px solid var(--line);cursor:pointer;display:block;}
-  textarea{font-family:'Spectral',serif;resize:vertical;min-height:44px;}
+  textarea{font-family:var(--font-body);resize:vertical;min-height:44px;}
   .dropdown-list{
     position:absolute;top:100%;left:0;right:0;z-index:20;
     background:var(--panel-2);border:1px solid var(--gold-soft);
@@ -236,7 +238,8 @@
   table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px;}
   thead th{text-align:left;font-weight:500;color:var(--text-dim);font-size:10px;letter-spacing:.03em;padding:0 8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
   tbody td{padding:11px 8px;border-bottom:1px solid var(--line-soft);white-space:nowrap;vertical-align:middle;}
-  tbody tr:hover{background:rgba(201,162,75,0.04);}
+  tbody tr{transition:background .15s ease, box-shadow .15s ease;}
+  tbody tr:hover{background:rgba(201,162,75,0.07);box-shadow:inset 3px 0 0 var(--gold);}
   td.num{text-align:right;font-variant-numeric:tabular-nums;}
   td.dir-sell{color:var(--loss);}
   td.dir-buy{color:var(--win);}
@@ -259,9 +262,9 @@
     background:color-mix(in srgb, var(--panel-2) 60%, transparent);
     border:1px solid color-mix(in srgb, var(--gold) 10%, transparent);
     border-radius:7px;
-    transition:border-color .15s ease;
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   }
-  .reason-row:hover{border-color:color-mix(in srgb, var(--gold) 25%, transparent);}
+  .reason-row:hover{border-color:color-mix(in srgb, var(--gold) 25%, transparent);transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.18);}
   .reason-row:last-child{margin-bottom:0;}
   .reason-row .name{color:var(--text);}
   .bar-track{background:var(--line-soft);height:10px;position:relative;}
@@ -322,6 +325,14 @@
       <h1>Trading Journal</h1>
       <div class="sub">Every entry, exit and the reasoning behind it — synced live to your account.</div>
     </div>
+    <select id="fontPickerBtn" class="icon-btn" title="Choose font" style="cursor:pointer;">
+      <option value="spectral">Font: Spectral (default)</option>
+      <option value="inter">Font: Inter</option>
+      <option value="ibmplexsans">Font: IBM Plex Sans</option>
+      <option value="roboto">Font: Roboto</option>
+      <option value="playfair">Font: Playfair Display</option>
+      <option value="georgia">Font: Georgia</option>
+    </select>
     <button class="icon-btn" id="themeToggleBtn" title="Toggle dark/light theme">🌙 Dark</button>
   </header>
 
@@ -870,7 +881,7 @@ function withTimeout(promise, ms, label){
 }
 
 /* ---------------- Searchable dropdown component ---------------- */
-function makeSearchable(inputId, listId, options, onSelect){
+function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
   let currentMatches = [];
@@ -897,6 +908,17 @@ function makeSearchable(inputId, listId, options, onSelect){
     list.classList.remove("show");
     input.dispatchEvent(new Event("input", { bubbles: true }));
     if(onSelect) onSelect(val);
+    // Auto-advance: jump straight to the next field once something is
+    // actually picked, so a quick type→arrow→Enter flow never needs the mouse.
+    // nextFieldId can be a fixed id, or a function returning one dynamically
+    // (useful when which field comes next depends on what was just picked).
+    const resolvedNext = typeof nextFieldId === "function" ? nextFieldId(val) : nextFieldId;
+    if (resolvedNext){
+      const nextEl = document.getElementById(resolvedNext);
+      if (nextEl){
+        setTimeout(()=>{ nextEl.focus(); if (nextEl.select) nextEl.select(); }, 0);
+      }
+    }
   }
 
   input.addEventListener("focus", () => render(input.value));
@@ -929,10 +951,10 @@ function makeSearchable(inputId, listId, options, onSelect){
     if (val) selectValue(val);
   });
 }
-makeSearchable("f-tf","dd-tf",TIMEFRAMES);
-makeSearchable("f-entrytf","dd-entrytf",TIMEFRAMES);
-makeSearchable("f-instrument","dd-instrument",INSTRUMENTS);
-makeSearchable("f-reason","dd-reason",REASONS);
+makeSearchable("f-tf","dd-tf",TIMEFRAMES,null,"f-entrytf");
+makeSearchable("f-entrytf","dd-entrytf",TIMEFRAMES,null,"f-instrument");
+makeSearchable("f-instrument","dd-instrument",INSTRUMENTS,null,"f-entry");
+makeSearchable("f-reason","dd-reason",REASONS,null,"f-rules");
 makeSearchable("f-mistake","dd-mistake",MISTAKES);
 
 /* ---------------- Direction toggle ---------------- */
@@ -1541,7 +1563,8 @@ function renderMistakeAnalytics(){
 }
 
 /* ---------------- Position size calculator (standalone tab) ---------------- */
-makeSearchable("calc-instrument", "dd-calc-instrument", INSTRUMENTS, updateCalcMode);
+makeSearchable("calc-instrument", "dd-calc-instrument", INSTRUMENTS, updateCalcMode,
+  (val) => calcModeNeedsEntry(val.toUpperCase()) ? "calc-entry" : "calc-sl-pips");
 document.getElementById("calc-slprice-field").style.display = "none"; // default: pips mode
 document.getElementById("calc-entry-field").style.display = "none";
 
@@ -1758,6 +1781,30 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
     const next = current === "light" ? "dark" : "light";
     apply(next);
     try { localStorage.setItem("myTradingOsTheme", next); } catch(e){}
+  });
+})();
+
+/* ---------------- Font picker ---------------- */
+(function initFontPicker(){
+  const sel = document.getElementById("fontPickerBtn");
+  const FONTS = {
+    spectral: "'Spectral',serif",
+    inter: "'Inter',sans-serif",
+    ibmplexsans: "'IBM Plex Sans',sans-serif",
+    roboto: "'Roboto',sans-serif",
+    playfair: "'Playfair Display',serif",
+    georgia: "Georgia,'Times New Roman',serif"
+  };
+  function apply(key){
+    document.documentElement.style.setProperty("--font-body", FONTS[key] || FONTS.spectral);
+    sel.value = key;
+  }
+  let saved = "spectral";
+  try { saved = localStorage.getItem("myTradingOsFont") || "spectral"; } catch(e){}
+  apply(saved);
+  sel.addEventListener("change", ()=>{
+    apply(sel.value);
+    try { localStorage.setItem("myTradingOsFont", sel.value); } catch(e){}
   });
 })();
 
