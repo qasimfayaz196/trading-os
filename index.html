@@ -45,7 +45,6 @@
     font-family:'Spectral',serif;
     -webkit-font-smoothing:antialiased;
   }
-  #bgCanvas{position:fixed;inset:0;z-index:0;display:block;}
   .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 28px 90px;}
 
   header{
@@ -154,6 +153,16 @@
 
   /* Form */
   .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .subcard{
+    background:color-mix(in srgb, var(--panel-2) 65%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 12%, transparent);
+    border-radius:8px;padding:16px;margin-bottom:14px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .subcard:hover{border-color:color-mix(in srgb, var(--gold) 28%, transparent);box-shadow:0 4px 14px rgba(0,0,0,.15);}
+  .subcard-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase;}
+  .subcard .form-grid{gap:14px;}
+  .subcard .form-grid:last-child{margin-bottom:0;}
   .field{display:flex;flex-direction:column;gap:6px;position:relative;}
   .field label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;}
   input[type=text],input[type=number],input[type=date],textarea,.searchbox input{
@@ -197,6 +206,7 @@
   .dropdown-list.show{opacity:1;visibility:visible;transform:translateY(0);}
   .dropdown-list div{padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer;}
   .dropdown-list div:hover{background:rgba(201,162,75,0.15);color:var(--gold);}
+  .dropdown-list div.highlighted{background:rgba(201,162,75,0.22);color:var(--gold);}
   .dir-toggle{display:flex;gap:8px;}
   .dir-btn{flex:1;padding:9px 10px;text-align:center;border:1px solid var(--line);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);}
   .dir-btn.buy.sel{background:rgba(79,174,142,.15);border-color:var(--win);color:var(--win);}
@@ -206,7 +216,10 @@
   .form-actions{margin-top:20px;display:flex;gap:10px;}
 
   /* Filters */
-  .filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;
+    background:color-mix(in srgb, var(--panel-2) 65%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 12%, transparent);
+    border-radius:8px;padding:14px 16px;}
   select{
     background:var(--panel-2);border:1px solid var(--line);color:var(--text);
     font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:8px 10px;
@@ -240,7 +253,16 @@
   .empty{color:var(--text-dim);font-size:13px;padding:30px 0;text-align:center;}
 
   /* Reason bars */
-  .reason-row{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .reason-row{
+    display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:14px;
+    padding:12px 14px;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    background:color-mix(in srgb, var(--panel-2) 60%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 10%, transparent);
+    border-radius:7px;
+    transition:border-color .15s ease;
+  }
+  .reason-row:hover{border-color:color-mix(in srgb, var(--gold) 25%, transparent);}
+  .reason-row:last-child{margin-bottom:0;}
   .reason-row .name{color:var(--text);}
   .bar-track{background:var(--line-soft);height:10px;position:relative;}
   .bar-fill{position:absolute;top:0;bottom:0;left:0;}
@@ -292,7 +314,6 @@
 </style>
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
 <div class="wrap">
 
   <header>
@@ -441,75 +462,102 @@
   <section class="tabpane" id="pane-addtrade">
     <div class="panel">
       <h3 id="formTitle">Add a new trade</h3>
-      <div class="form-grid">
-        <div class="field">
-          <label>DATE</label>
-          <input type="date" id="f-date">
-        </div>
-        <div class="field">
-          <label>TRADE TIMEFRAME (SETUP)</label>
-          <div class="searchbox"><input type="text" id="f-tf" autocomplete="off" placeholder="e.g. 4H"></div>
-          <div class="dropdown-list" id="dd-tf"></div>
-        </div>
-        <div class="field">
-          <label>ENTRY TIMEFRAME</label>
-          <div class="searchbox"><input type="text" id="f-entrytf" autocomplete="off" placeholder="e.g. 5M"></div>
-          <div class="dropdown-list" id="dd-entrytf"></div>
-        </div>
-        <div class="field">
-          <label>INSTRUMENT</label>
-          <div class="searchbox"><input type="text" id="f-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
-          <div class="dropdown-list" id="dd-instrument"></div>
-        </div>
-        <div class="field">
-          <label>DIRECTION</label>
-          <div class="dir-toggle">
-            <div class="dir-btn buy" data-dir="BUY">BUY</div>
-            <div class="dir-btn sell" data-dir="SELL">SELL</div>
+
+      <div class="subcard">
+        <div class="subcard-title">When</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>DATE</label>
+            <input type="date" id="f-date">
           </div>
-        </div>
-        <div class="field">
-          <label>ENTRY PRICE</label>
-          <input type="number" id="f-entry" step="any">
-        </div>
-        <div class="field">
-          <label>EXIT PRICE</label>
-          <input type="number" id="f-exit" step="any">
-        </div>
-        <div class="field" id="convrate-field" style="display:none;">
-          <label id="convrate-label">CONVERSION RATE</label>
-          <input type="number" id="f-convrate" step="any" placeholder="auto-fetching…">
-          <div class="sub" id="convrate-status" style="margin-top:4px;"></div>
-        </div>
-        <div class="field">
-          <label>LOT SIZE</label>
-          <input type="number" id="f-lot" step="0.01" min="0.01" value="0.01">
-        </div>
-        <div class="field">
-          <label>REASON OF TRADE</label>
-          <div class="searchbox"><input type="text" id="f-reason" autocomplete="off" placeholder="e.g. SBT 3"></div>
-          <div class="dropdown-list" id="dd-reason"></div>
-        </div>
-        <div class="field">
-          <label>TRADE QUALITY (OPTIONAL)</label>
-          <div class="dir-toggle">
-            <div class="grade-btn" data-grade="A">A — Clean</div>
-            <div class="grade-btn" data-grade="B">B — Okay</div>
-            <div class="grade-btn" data-grade="C">C — Weak</div>
+          <div class="field">
+            <label>TRADE TIMEFRAME (SETUP)</label>
+            <div class="searchbox"><input type="text" id="f-tf" autocomplete="off" placeholder="e.g. 4H"></div>
+            <div class="dropdown-list" id="dd-tf"></div>
+          </div>
+          <div class="field">
+            <label>ENTRY TIMEFRAME</label>
+            <div class="searchbox"><input type="text" id="f-entrytf" autocomplete="off" placeholder="e.g. 5M"></div>
+            <div class="dropdown-list" id="dd-entrytf"></div>
           </div>
         </div>
       </div>
-      <div class="form-grid" style="margin-top:16px;">
-        <div class="field" style="grid-column:span 1;">
-          <label>ENTRY RULES / LINK (OPTIONAL)</label>
-          <textarea id="f-rules"></textarea>
-        </div>
-        <div class="field">
-          <label>MISTAKE (OPTIONAL)</label>
-          <div class="searchbox"><input type="text" id="f-mistake" autocomplete="off" placeholder="e.g. Early Entry"></div>
-          <div class="dropdown-list" id="dd-mistake"></div>
+
+      <div class="subcard">
+        <div class="subcard-title">What &amp; which way</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>INSTRUMENT</label>
+            <div class="searchbox"><input type="text" id="f-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
+            <div class="dropdown-list" id="dd-instrument"></div>
+          </div>
+          <div class="field">
+            <label>DIRECTION</label>
+            <div class="dir-toggle">
+              <div class="dir-btn buy" data-dir="BUY">BUY</div>
+              <div class="dir-btn sell" data-dir="SELL">SELL</div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div class="subcard">
+        <div class="subcard-title">Prices &amp; size</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>ENTRY PRICE</label>
+            <input type="number" id="f-entry" step="any">
+          </div>
+          <div class="field">
+            <label>EXIT PRICE</label>
+            <input type="number" id="f-exit" step="any">
+          </div>
+          <div class="field" id="convrate-field" style="display:none;">
+            <label id="convrate-label">CONVERSION RATE</label>
+            <input type="number" id="f-convrate" step="any" placeholder="auto-fetching…">
+            <div class="sub" id="convrate-status" style="margin-top:4px;"></div>
+          </div>
+          <div class="field">
+            <label>LOT SIZE</label>
+            <input type="number" id="f-lot" step="0.01" min="0.01" value="0.01">
+          </div>
+        </div>
+      </div>
+
+      <div class="subcard">
+        <div class="subcard-title">Why &amp; how good</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>REASON OF TRADE</label>
+            <div class="searchbox"><input type="text" id="f-reason" autocomplete="off" placeholder="e.g. SBT 3"></div>
+            <div class="dropdown-list" id="dd-reason"></div>
+          </div>
+          <div class="field">
+            <label>TRADE QUALITY (OPTIONAL)</label>
+            <div class="dir-toggle">
+              <div class="grade-btn" data-grade="A">A — Clean</div>
+              <div class="grade-btn" data-grade="B">B — Okay</div>
+              <div class="grade-btn" data-grade="C">C — Weak</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subcard">
+        <div class="subcard-title">Notes</div>
+        <div class="form-grid">
+          <div class="field" style="grid-column:span 1;">
+            <label>ENTRY RULES / LINK (OPTIONAL)</label>
+            <textarea id="f-rules"></textarea>
+          </div>
+          <div class="field">
+            <label>MISTAKE (OPTIONAL)</label>
+            <div class="searchbox"><input type="text" id="f-mistake" autocomplete="off" placeholder="e.g. Early Entry"></div>
+            <div class="dropdown-list" id="dd-mistake"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel" id="livePreview" style="background:var(--panel-2);margin-top:18px;margin-bottom:0;display:none;">
         <h3 style="margin-bottom:10px;font-size:13px;color:var(--gold);">Estimated result</h3>
         <div class="row" style="gap:24px;">
@@ -537,18 +585,20 @@
       <button class="btn secondary" id="exportCsvBtn" style="margin-left:auto;">⬇ Export CSV (current filter)</button>
     </div>
     <div class="filter-summary" id="filterSummary"></div>
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
-            <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
-            <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th>Grade</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-      <div class="empty" id="historyEmpty" style="display:none;">No trades yet — add your first one in the "Add Trade" tab.</div>
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Date</th><th>TF</th><th>Entry TF</th><th>Instrument</th><th>Dir</th>
+              <th class="num">Entry</th><th class="num">Exit</th><th class="num">Lot</th>
+              <th class="num">Pips</th><th class="num">Net</th><th>Result</th><th>Reason</th><th>Grade</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <div class="empty" id="historyEmpty" style="display:none;">No trades yet — add your first one in the "Add Trade" tab.</div>
+      </div>
     </div>
   </section>
 
@@ -577,39 +627,50 @@
     <div class="panel">
       <h3>🧮 Position size calculator</h3>
       <div class="sub" style="margin-bottom:18px;">Work out how many lots to trade so a stopped-out loss only costs the % of your account you choose to risk.</div>
-      <div class="form-grid">
-        <div class="field">
-          <label>ACCOUNT BALANCE (USD)</label>
-          <input type="number" id="calc-balance" step="0.01">
-        </div>
-        <div class="field">
-          <label>RISK % PER TRADE</label>
-          <input type="number" id="calc-risk" step="0.1" value="1">
-        </div>
-        <div class="field">
-          <label>INSTRUMENT</label>
-          <div class="searchbox"><input type="text" id="calc-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
-          <div class="dropdown-list" id="dd-calc-instrument"></div>
-        </div>
-        <div class="field" id="calc-entry-field">
-          <label>ENTRY PRICE</label>
-          <input type="number" id="calc-entry" step="any">
-        </div>
-        <div class="field" id="calc-slprice-field">
-          <label>STOP LOSS PRICE</label>
-          <input type="number" id="calc-sl-price" step="any" placeholder="e.g. 3345.50">
-        </div>
-        <div class="field" id="calc-slpips-field">
-          <label>STOP LOSS — PIPS</label>
-          <input type="number" id="calc-sl-pips" step="any" placeholder="e.g. 300">
-        </div>
-        <div class="field" id="calc-convrate-field" style="display:none;">
-          <label id="calc-convrate-label">CONVERSION RATE</label>
-          <input type="number" id="calc-convrate" step="any" placeholder="auto-fetching…">
-          <div class="sub" id="calc-convrate-status" style="margin-top:4px;"></div>
+
+      <div class="subcard">
+        <div class="subcard-title">Account &amp; risk</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>ACCOUNT BALANCE (USD)</label>
+            <input type="number" id="calc-balance" step="0.01">
+          </div>
+          <div class="field">
+            <label>RISK % PER TRADE</label>
+            <input type="number" id="calc-risk" step="0.1" value="1">
+          </div>
+          <div class="field">
+            <label>INSTRUMENT</label>
+            <div class="searchbox"><input type="text" id="calc-instrument" autocomplete="off" placeholder="e.g. XAUUSD"></div>
+            <div class="dropdown-list" id="dd-calc-instrument"></div>
+          </div>
         </div>
       </div>
-      <div class="sub" id="calc-mode-note" style="margin-bottom:14px;"></div>
+
+      <div class="subcard">
+        <div class="subcard-title">Stop loss</div>
+        <div class="form-grid">
+          <div class="field" id="calc-entry-field">
+            <label>ENTRY PRICE</label>
+            <input type="number" id="calc-entry" step="any">
+          </div>
+          <div class="field" id="calc-slprice-field">
+            <label>STOP LOSS PRICE</label>
+            <input type="number" id="calc-sl-price" step="any" placeholder="e.g. 3345.50">
+          </div>
+          <div class="field" id="calc-slpips-field">
+            <label>STOP LOSS — PIPS</label>
+            <input type="number" id="calc-sl-pips" step="any" placeholder="e.g. 300">
+          </div>
+          <div class="field" id="calc-convrate-field" style="display:none;">
+            <label id="calc-convrate-label">CONVERSION RATE</label>
+            <input type="number" id="calc-convrate" step="any" placeholder="auto-fetching…">
+            <div class="sub" id="calc-convrate-status" style="margin-top:4px;"></div>
+          </div>
+        </div>
+        <div class="sub" id="calc-mode-note" style="margin-bottom:0;"></div>
+      </div>
+
       <div class="calc-result" id="calc-result">Suggested lot size: —</div>
     </div>
   </section>
@@ -812,24 +873,60 @@ function withTimeout(promise, ms, label){
 function makeSearchable(inputId, listId, options, onSelect){
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
+  let currentMatches = [];
+  let highlightIndex = -1;
+
+  function renderHighlight(){
+    Array.from(list.children).forEach((el,i)=>{
+      el.classList.toggle("highlighted", i === highlightIndex);
+      if (i === highlightIndex) el.scrollIntoView({ block: "nearest" });
+    });
+  }
+
   function render(filter){
     const f = (filter||"").toUpperCase();
-    const matches = options.filter(o => o.toUpperCase().startsWith(f));
-    if (!matches.length){ list.classList.remove("show"); return; }
-    list.innerHTML = matches.map(o => `<div data-val="${o}">${o}</div>`).join("");
+    currentMatches = options.filter(o => o.toUpperCase().startsWith(f));
+    highlightIndex = -1;
+    if (!currentMatches.length){ list.classList.remove("show"); return; }
+    list.innerHTML = currentMatches.map(o => `<div data-val="${o}">${o}</div>`).join("");
     list.classList.add("show");
   }
+
+  function selectValue(val){
+    input.value = val;
+    list.classList.remove("show");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    if(onSelect) onSelect(val);
+  }
+
   input.addEventListener("focus", () => render(input.value));
   input.addEventListener("input", () => render(input.value));
   input.addEventListener("blur", () => setTimeout(()=>{ list.classList.remove("show"); }, 150));
+
+  input.addEventListener("keydown", (e) => {
+    if (!list.classList.contains("show") || !currentMatches.length) return;
+    if (e.key === "ArrowDown"){
+      e.preventDefault();
+      highlightIndex = (highlightIndex + 1) % currentMatches.length;
+      renderHighlight();
+    } else if (e.key === "ArrowUp"){
+      e.preventDefault();
+      highlightIndex = (highlightIndex - 1 + currentMatches.length) % currentMatches.length;
+      renderHighlight();
+    } else if (e.key === "Enter"){
+      // If the user hasn't arrowed to a specific option yet, Enter picks the
+      // top match — otherwise it picks whichever one is highlighted.
+      e.preventDefault();
+      const pick = highlightIndex >= 0 ? currentMatches[highlightIndex] : currentMatches[0];
+      if (pick) selectValue(pick);
+    } else if (e.key === "Escape"){
+      list.classList.remove("show");
+    }
+  });
+
   list.addEventListener("mousedown", (e) => {
     const val = e.target.getAttribute("data-val");
-    if (val){
-      input.value = val;
-      list.classList.remove("show");
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      if(onSelect) onSelect(val);
-    }
+    if (val) selectValue(val);
   });
 }
 makeSearchable("f-tf","dd-tf",TIMEFRAMES);
@@ -1652,7 +1749,6 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
   function apply(theme){
     document.documentElement.setAttribute("data-theme", theme);
     btn.textContent = theme === "light" ? "☀️ Light" : "🌙 Dark";
-    document.getElementById("bgCanvas").style.display = theme === "light" ? "none" : "block";
   }
   let saved = "dark";
   try { saved = localStorage.getItem("myTradingOsTheme") || "dark"; } catch(e){}
@@ -1663,80 +1759,6 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
     apply(next);
     try { localStorage.setItem("myTradingOsTheme", next); } catch(e){}
   });
-})();
-
-/* ---------------- Constellation-network background (dark theme only) ---------------- */
-(function initBackground(){
-  const canvas = document.getElementById("bgCanvas");
-  const ctx = canvas.getContext("2d");
-  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  resize();
-  window.addEventListener("resize", resize);
-
-  const COUNT = 60;
-  const LINK_DIST = 140;
-  const GOLD = [201, 162, 75];
-  const nodes = [];
-  for (let i=0;i<COUNT;i++){
-    nodes.push({
-      x: Math.random()*canvas.width,
-      y: Math.random()*canvas.height,
-      vx: (Math.random()-0.5)*0.2,
-      vy: (Math.random()-0.5)*0.2,
-      r: Math.random()*1.4 + 0.6,
-      glow: Math.random() < 0.12
-    });
-  }
-
-  let running = true;
-  document.addEventListener("visibilitychange", ()=>{ running = !document.hidden; if (running) requestAnimationFrame(tick); });
-
-  function tick(){
-    if (!running) return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    for (let i=0;i<COUNT;i++){
-      const n = nodes[i];
-      n.x += n.vx; n.y += n.vy;
-      if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
-      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
-    }
-
-    for (let i=0;i<COUNT;i++){
-      for (let j=i+1;j<COUNT;j++){
-        const dx = nodes[i].x-nodes[j].x, dy = nodes[i].y-nodes[j].y;
-        const dist = Math.sqrt(dx*dx+dy*dy);
-        if (dist < LINK_DIST){
-          const op = (1 - dist/LINK_DIST) * 0.18;
-          ctx.strokeStyle = `rgba(${GOLD.join(',')},${op})`;
-          ctx.lineWidth = 0.6;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    nodes.forEach(n=>{
-      if (n.glow){
-        const grad = ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,9);
-        grad.addColorStop(0, `rgba(${GOLD.join(',')},0.4)`);
-        grad.addColorStop(1, `rgba(${GOLD.join(',')},0)`);
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, 9, 0, Math.PI*2);
-        ctx.fill();
-      }
-      ctx.fillStyle = `rgba(${GOLD.join(',')},0.75)`;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
-      ctx.fill();
-    });
-
-    requestAnimationFrame(tick);
-  }
-  tick();
 })();
 
 /* ---------------- Card 3D tilt-on-hover (dashboard summary cards only) ---------------- */
