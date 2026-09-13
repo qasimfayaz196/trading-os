@@ -199,14 +199,14 @@
   .thumb{width:44px;height:44px;object-fit:cover;border:1px solid var(--line);cursor:pointer;display:block;}
   textarea{font-family:var(--font-body);resize:vertical;min-height:44px;}
   .dropdown-list{
-    position:absolute;top:100%;left:0;right:0;z-index:500;
+    position:fixed;z-index:9999;
     background:var(--panel-2);border:1px solid var(--gold-soft);
     max-height:180px;overflow-y:auto;
-    opacity:0;visibility:hidden;transform:translateY(-4px);
-    transition:opacity .12s ease, transform .12s ease;
-    box-shadow:0 10px 24px rgba(0,0,0,0.4);
+    opacity:0;visibility:hidden;
+    transition:opacity .12s ease;
+    box-shadow:0 10px 24px rgba(0,0,0,0.5);
   }
-  .dropdown-list.show{opacity:1;visibility:visible;transform:translateY(0);}
+  .dropdown-list.show{opacity:1;visibility:visible;}
   .dropdown-list div{padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer;}
   .dropdown-list div:hover{background:rgba(201,162,75,0.15);color:var(--gold);}
   .dropdown-list div.highlighted{background:rgba(201,162,75,0.22);color:var(--gold);}
@@ -888,6 +888,13 @@ function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
   let currentMatches = [];
   let highlightIndex = -1;
 
+  function positionList(){
+    const r = input.getBoundingClientRect();
+    list.style.left = r.left + "px";
+    list.style.top = (r.bottom + 4) + "px";
+    list.style.width = r.width + "px";
+  }
+
   function renderHighlight(){
     Array.from(list.children).forEach((el,i)=>{
       el.classList.toggle("highlighted", i === highlightIndex);
@@ -901,6 +908,7 @@ function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
     highlightIndex = -1;
     if (!currentMatches.length){ list.classList.remove("show"); return; }
     list.innerHTML = currentMatches.map(o => `<div data-val="${o}">${o}</div>`).join("");
+    positionList();
     list.classList.add("show");
   }
 
@@ -925,6 +933,8 @@ function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
   input.addEventListener("focus", () => render(input.value));
   input.addEventListener("input", () => render(input.value));
   input.addEventListener("blur", () => setTimeout(()=>{ list.classList.remove("show"); }, 150));
+  window.addEventListener("scroll", ()=>{ if (list.classList.contains("show")) positionList(); }, true);
+  window.addEventListener("resize", ()=>{ if (list.classList.contains("show")) positionList(); });
 
   input.addEventListener("keydown", (e) => {
     if (!list.classList.contains("show") || !currentMatches.length) return;
