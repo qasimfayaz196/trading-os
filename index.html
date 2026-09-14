@@ -167,7 +167,7 @@
   .subcard .form-grid:last-child{margin-bottom:0;}
   .field{display:flex;flex-direction:column;gap:6px;position:relative;}
   .field label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);letter-spacing:.03em;}
-  input[type=text],input[type=number],input[type=date],textarea,.searchbox input{
+  input[type=text],input[type=number],input[type=date],input[type=password],textarea,.searchbox input{
     background:var(--panel-2);
     border:1px solid var(--line);
     color:var(--text);
@@ -177,6 +177,14 @@
     outline:none;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
+  .pin-wrap{position:relative;}
+  .pin-wrap input{width:100%;padding-right:38px;}
+  .pin-eye{
+    position:absolute;right:0;top:0;bottom:0;width:36px;
+    background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .pin-eye:hover{color:var(--gold);}
   input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,0.12);}
   input[type=file]{
     background:var(--panel-2);
@@ -376,7 +384,10 @@
       </div>
       <div class="field">
         <label id="sheetModalPinLabel">PIN / KEY (OPTIONAL)</label>
-        <input type="password" id="sheetModalPin" autocomplete="new-password" placeholder="Leave blank for no PIN">
+        <div class="pin-wrap">
+          <input type="password" id="sheetModalPin" autocomplete="new-password" placeholder="Leave blank for no PIN">
+          <button type="button" class="pin-eye" id="sheetModalPinEye" tabindex="-1" title="Show/hide">👁</button>
+        </div>
         <div class="sub" id="sheetModalPinNote" style="margin-top:6px;"></div>
       </div>
       <div class="form-actions">
@@ -393,7 +404,10 @@
       <div class="sub" style="margin-bottom:14px;">This sheet — "<span id="pinPromptSheetName"></span>" — is locked.</div>
       <div class="field">
         <label>PIN / KEY</label>
-        <input type="password" id="pinPromptInput" autocomplete="off">
+        <div class="pin-wrap">
+          <input type="password" id="pinPromptInput" autocomplete="off">
+          <button type="button" class="pin-eye" id="pinPromptEye" tabindex="-1" title="Show/hide">👁</button>
+        </div>
         <div class="sub" id="pinPromptError" style="margin-top:6px;color:var(--loss);"></div>
       </div>
       <div class="form-actions">
@@ -1211,6 +1225,19 @@ document.getElementById("pinPromptUnlock").addEventListener("click", async ()=>{
 document.getElementById("pinPromptInput").addEventListener("keydown", (e)=>{
   if (e.key === "Enter") document.getElementById("pinPromptUnlock").click();
 });
+
+/* ---------------- Show/hide PIN toggle (eye icon) ---------------- */
+function wirePinEye(inputId, btnId){
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  btn.addEventListener("click", ()=>{
+    const showing = input.type === "text";
+    input.type = showing ? "password" : "text";
+    btn.textContent = showing ? "👁" : "🙈";
+  });
+}
+wirePinEye("sheetModalPin", "sheetModalPinEye");
+wirePinEye("pinPromptInput", "pinPromptEye");
 
 function _doSwitchStrategy(id){
   if (!id || currentStrategyId === id) return;
