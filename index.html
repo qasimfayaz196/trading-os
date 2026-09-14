@@ -179,6 +179,7 @@
   }
   .pin-wrap{position:relative;}
   .pin-wrap input{width:100%;padding-right:38px;}
+  .pin-masked{-webkit-text-security:disc;text-security:disc;}
   .pin-eye{
     position:absolute;right:0;top:0;bottom:0;width:36px;
     background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;
@@ -385,7 +386,7 @@
       <div class="field">
         <label id="sheetModalPinLabel">PIN / KEY (OPTIONAL)</label>
         <div class="pin-wrap">
-          <input type="password" id="sheetModalPin" autocomplete="new-password" placeholder="Leave blank for no PIN">
+          <input type="text" id="sheetModalPin" name="sheet-pin-field" class="pin-masked" autocomplete="off" data-lpignore="true" data-1p-ignore placeholder="Leave blank for no PIN">
           <button type="button" class="pin-eye" id="sheetModalPinEye" tabindex="-1" title="Show/hide">👁</button>
         </div>
         <div class="sub" id="sheetModalPinNote" style="margin-top:6px;"></div>
@@ -405,7 +406,7 @@
       <div class="field">
         <label>PIN / KEY</label>
         <div class="pin-wrap">
-          <input type="password" id="pinPromptInput" autocomplete="off">
+          <input type="text" id="pinPromptInput" name="pin-unlock-field" class="pin-masked" autocomplete="off" data-lpignore="true" data-1p-ignore>
           <button type="button" class="pin-eye" id="pinPromptEye" tabindex="-1" title="Show/hide">👁</button>
         </div>
         <div class="sub" id="pinPromptError" style="margin-top:6px;color:var(--loss);"></div>
@@ -1231,8 +1232,8 @@ function wirePinEye(inputId, btnId){
   const input = document.getElementById(inputId);
   const btn = document.getElementById(btnId);
   btn.addEventListener("click", ()=>{
-    const showing = input.type === "text";
-    input.type = showing ? "password" : "text";
+    const showing = !input.classList.contains("pin-masked");
+    input.classList.toggle("pin-masked", showing);
     btn.textContent = showing ? "👁" : "🙈";
   });
 }
