@@ -370,13 +370,35 @@
         <label>SHEET NAME</label>
         <input type="text" id="sheetModalName" placeholder="e.g. Strategy A">
       </div>
-      <div class="field">
+      <div class="field" style="margin-bottom:14px;">
         <label>STARTING BALANCE (USD)</label>
         <input type="number" id="sheetModalBalance" step="0.01" placeholder="e.g. 1000.00">
+      </div>
+      <div class="field">
+        <label id="sheetModalPinLabel">PIN / KEY (OPTIONAL)</label>
+        <input type="password" id="sheetModalPin" autocomplete="new-password" placeholder="Leave blank for no PIN">
+        <div class="sub" id="sheetModalPinNote" style="margin-top:6px;"></div>
       </div>
       <div class="form-actions">
         <button class="btn" id="sheetModalSave">Save</button>
         <button class="btn secondary" id="sheetModalCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PIN entry to unlock a locked sheet -->
+  <div class="modal-overlay" id="pinPromptOverlay">
+    <div class="modal-box">
+      <h3>Enter PIN</h3>
+      <div class="sub" style="margin-bottom:14px;">This sheet — "<span id="pinPromptSheetName"></span>" — is locked.</div>
+      <div class="field">
+        <label>PIN / KEY</label>
+        <input type="password" id="pinPromptInput" autocomplete="off">
+        <div class="sub" id="pinPromptError" style="margin-top:6px;color:var(--loss);"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="pinPromptUnlock">Unlock</button>
+        <button class="btn secondary" id="pinPromptCancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -1137,7 +1159,60 @@ function renderStrategySwitcher(){
   if (currentStrategyId) sel.value = currentStrategyId;
 }
 
+/* ---------------- Sheet PIN lock (soft privacy lock, not real security —
+   see conversation notes: it only gates the app's own UI; Firestore itself
+   is still readable by anyone with the project config, since rules are open) --------------- */
+let unlockedSheets = new Set(); // in-memory only — resets on every page reload, per user's request
+let pendingUnlockId = null;
+
+async function hashPin(pin){
+  const enc = new TextEncoder().encode(pin);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
 function switchStrategy(id){
+  if (!id || currentStrategyId === id) return;
+  const strat = strategies.find(s => s.id === id);
+  if (strat && strat.pinHash && !unlockedSheets.has(id)){
+    pendingUnlockId = id;
+    document.getElementById("pinPromptSheetName").textContent = strat.name || "Untitled";
+    document.getElementById("pinPromptInput").value = "";
+    document.getElementById("pinPromptError").textContent = "";
+    showModal("pinPromptOverlay");
+    renderStrategySwitcher(); // keep the dropdown showing the still-active sheet, not the locked one
+    setTimeout(()=> document.getElementById("pinPromptInput").focus(), 50);
+    return;
+  }
+  _doSwitchStrategy(id);
+}
+
+document.getElementById("pinPromptCancel").addEventListener("click", ()=>{
+  hideModal("pinPromptOverlay");
+  pendingUnlockId = null;
+});
+document.getElementById("pinPromptUnlock").addEventListener("click", async ()=>{
+  const id = pendingUnlockId;
+  if (!id) return;
+  const strat = strategies.find(s => s.id === id);
+  const entered = document.getElementById("pinPromptInput").value;
+  const errEl = document.getElementById("pinPromptError");
+  if (!entered){ errEl.textContent = "Please enter the PIN."; return; }
+  const hash = await hashPin(entered);
+  if (strat && hash === strat.pinHash){
+    unlockedSheets.add(id);
+    hideModal("pinPromptOverlay");
+    pendingUnlockId = null;
+    _doSwitchStrategy(id);
+  } else {
+    errEl.textContent = "✗ Incorrect PIN.";
+  }
+});
+document.getElementById("pinPromptInput").addEventListener("keydown", (e)=>{
+  if (e.key === "Enter") document.getElementById("pinPromptUnlock").click();
+});
+
+function _doSwitchStrategy(id){
   if (!id || currentStrategyId === id) return;
   currentStrategyId = id;
   appReady = true;
@@ -1291,19 +1366,46 @@ function openSheetModal(mode){
   sheetModalMode = mode;
   const nameInput = document.getElementById("sheetModalName");
   const balInput = document.getElementById("sheetModalBalance");
+  const pinInput = document.getElementById("sheetModalPin");
+  const pinNote = document.getElementById("sheetModalPinNote");
+  pinInput.value = "";
   if (mode === "create"){
     document.getElementById("sheetModalTitle").textContent = "New strategy sheet";
     nameInput.value = "";
     balInput.value = "";
+    pinInput.placeholder = "Leave blank for no PIN";
+    pinNote.innerHTML = "";
   } else {
     const cur = strategies.find(s => s.id === currentStrategyId);
     document.getElementById("sheetModalTitle").textContent = "Sheet settings";
     nameInput.value = cur ? (cur.name || "") : "";
     balInput.value = (startingBalance ?? "");
+    if (cur && cur.pinHash){
+      pinInput.placeholder = "Leave blank to keep current PIN";
+      pinNote.innerHTML = `🔒 A PIN is set on this sheet. <a href="#" id="removePinLink" style="color:var(--loss);text-decoration:underline;">Remove PIN</a>`;
+    } else {
+      pinInput.placeholder = "Leave blank for no PIN";
+      pinNote.innerHTML = `🔓 No PIN set on this sheet.`;
+    }
   }
   showModal("sheetModalOverlay");
   nameInput.focus();
 }
+document.getElementById("sheetModalPinNote").addEventListener("click", async (e)=>{
+  if (e.target.id !== "removePinLink") return;
+  e.preventDefault();
+  if (readOnlyMode || !currentStrategyId) return;
+  const ok = confirm("Remove the PIN from this sheet? Anyone will be able to open it without a key.");
+  if (!ok) return;
+  const cur = strategies.find(s => s.id === currentStrategyId);
+  if (cur) cur.pinHash = null;
+  document.getElementById("sheetModalPinNote").innerHTML = "🔓 No PIN set on this sheet.";
+  document.getElementById("sheetModalPin").placeholder = "Leave blank for no PIN";
+  showToast("✓ PIN removed", "success");
+  try{
+    await updateDoc(doc(db, "strategies", currentStrategyId), { pinHash: null });
+  } catch(err){ showToast("✗ " + err.message, "error"); }
+});
 document.getElementById("sheetModalCancel").addEventListener("click", ()=>{
   hideModal("sheetModalOverlay");
 });
@@ -1312,20 +1414,29 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
   const name = document.getElementById("sheetModalName").value.trim();
   const balRaw = document.getElementById("sheetModalBalance").value;
   const bal = balRaw === "" ? null : parseFloat(balRaw);
+  const pinRaw = document.getElementById("sheetModalPin").value;
 
   if (!name){ showToast("✗ Please enter a sheet name.", "error"); return; }
   if (balRaw !== "" && isNaN(bal)){ showToast("✗ Please enter a valid balance.", "error"); return; }
 
   hideModal("sheetModalOverlay");
 
+  // undefined = "leave whatever PIN already exists untouched" (edit mode, field left blank)
+  let pinHash;
+  if (pinRaw !== ""){
+    pinHash = await hashPin(pinRaw);
+  }
+
   if (sheetModalMode === "create"){
     const newOrder = strategies.length ? Math.max(...strategies.map(s=>s.order??0)) + 1 : 0;
     const createdAt = Date.now();
     try{
-      const ref = await addDoc(strategiesCol, { name, startingBalance: bal, order: newOrder, createdAt });
+      const docData = { name, startingBalance: bal, order: newOrder, createdAt, pinHash: pinHash || null };
+      const ref = await addDoc(strategiesCol, docData);
+      if (pinHash) unlockedSheets.add(ref.id); // whoever just set the PIN doesn't need to re-enter it immediately
       // optimistic — don't wait for the strategies onSnapshot to refire before switching to it
       if (!strategies.find(s => s.id === ref.id)){
-        strategies.push({ id: ref.id, name, startingBalance: bal, order: newOrder, createdAt });
+        strategies.push({ id: ref.id, ...docData });
       }
       showToast("✓ Sheet created", "success");
       switchStrategy(ref.id);
@@ -1334,12 +1445,17 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
     if (!currentStrategyId){ showToast("⏳ Still loading — please wait a moment and try again.", "error"); return; }
     startingBalance = bal; // optimistic — instant dashboard update
     const curEntry = strategies.find(s => s.id === currentStrategyId);
-    if (curEntry) curEntry.name = name; // optimistic — instant dropdown update
+    if (curEntry){
+      curEntry.name = name; // optimistic — instant dropdown update
+      if (pinHash !== undefined) curEntry.pinHash = pinHash;
+    }
     renderDashboard();
     renderStrategySwitcher();
     showToast("✓ Sheet updated", "success");
+    const updatePayload = { name, startingBalance: bal };
+    if (pinHash !== undefined) updatePayload.pinHash = pinHash;
     try{
-      await updateDoc(doc(db, "strategies", currentStrategyId), { name, startingBalance: bal });
+      await updateDoc(doc(db, "strategies", currentStrategyId), updatePayload);
     } catch(err){ showToast("✗ " + err.message, "error"); }
   }
 });
