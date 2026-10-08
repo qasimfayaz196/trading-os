@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -318,6 +317,63 @@
   /* Position size calculator */
   .calc-result{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--gold);margin-top:12px;}
 
+  /* ---- Fundamentals module ---- */
+  .fx-meter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .fx-pill{
+    flex:1;min-width:88px;text-align:center;padding:12px 8px;border-radius:8px;cursor:pointer;
+    background:color-mix(in srgb, var(--panel-2) 70%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 14%, transparent);
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .fx-pill:hover{transform:translateY(-2px);}
+  .fx-pill.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+  .fx-pill .ccy{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);letter-spacing:.04em;}
+  .fx-pill .score{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;margin-top:4px;}
+  .fx-pill .score.pos{color:var(--win);}
+  .fx-pill .score.neg{color:var(--loss);}
+  .fx-pill .score.zero{color:var(--text-dim);}
+
+  .fx-risk-toggle{display:flex;gap:8px;margin:14px 0 18px;}
+  .fx-risk-btn{flex:1;padding:10px;text-align:center;border:1px solid var(--line);color:var(--text-dim);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:6px;}
+  .fx-risk-btn.sel-off{background:rgba(210,105,74,.15);border-color:var(--loss);color:var(--loss);}
+  .fx-risk-btn.sel-on{background:rgba(79,174,142,.15);border-color:var(--win);color:var(--win);}
+  .fx-risk-btn.sel-neutral{background:rgba(201,162,75,.15);border-color:var(--gold);color:var(--gold);}
+
+  .fx-item-row{display:grid;grid-template-columns:1fr 90px 90px 70px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .fx-item-row:last-child{border-bottom:none;}
+  .fx-item-row .fx-item-label{color:var(--text-dim);}
+  .fx-item-row input{padding:6px 8px;font-size:12px;}
+  .fx-item-score{text-align:center;font-weight:700;padding:4px 0;border-radius:4px;}
+  .fx-item-score.pos{color:var(--win);background:rgba(79,174,142,.12);}
+  .fx-item-score.neg{color:var(--loss);background:rgba(210,105,74,.12);}
+  .fx-item-score.zero{color:var(--text-dim);background:rgba(255,255,255,.03);}
+
+  .fx-section-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--gold-soft);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-section-total b{font-size:16px;}
+
+  .fx-bias-band{display:inline-block;padding:4px 12px;border-radius:14px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.03em;}
+  .fx-bias-band.strong-bull{background:rgba(79,174,142,.22);color:var(--win);}
+  .fx-bias-band.bull{background:rgba(79,174,142,.12);color:var(--win);}
+  .fx-bias-band.neutral{background:rgba(255,255,255,.06);color:var(--text-dim);}
+  .fx-bias-band.bear{background:rgba(210,105,74,.12);color:var(--loss);}
+  .fx-bias-band.strong-bear{background:rgba(210,105,74,.22);color:var(--loss);}
+
+  .fx-collapse-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+  .fx-collapse-head .chev{transition:transform .15s ease;color:var(--text-dim);}
+  .fx-collapse-head.open .chev{transform:rotate(90deg);}
+  .fx-collapse-body{display:none;margin-top:14px;}
+  .fx-collapse-body.open{display:block;}
+
+  .fx-cal-banner{background:rgba(201,162,75,.08);border:1px solid var(--gold-soft);padding:10px 14px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:14px;}
+  .fx-stale{color:var(--loss);}
+  .fx-reasons li{margin-bottom:4px;}
+
+  .fx-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .fx-table th{text-align:left;color:var(--text-dim);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line);}
+  .fx-table td{padding:6px 8px;border-bottom:1px solid var(--line-soft);}
+  .fx-table td[contenteditable]{outline:none;border-bottom:1px dashed var(--gold-soft);}
+  .fx-table td[contenteditable]:focus{background:rgba(201,162,75,.08);}
+
   @media (max-width:760px){
     .cards{grid-template-columns:repeat(2,1fr);}
     .form-grid{grid-template-columns:1fr 1fr;}
@@ -367,6 +423,7 @@
     <button data-tab="history">Trade History</button>
     <button data-tab="reasons">Reason Summary</button>
     <button data-tab="calculator" class="ro-hide">Position Calculator</button>
+    <button data-tab="fundamentals">Fundamentals</button>
   </nav>
 
   <div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;z-index:999;padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .2s ease, opacity .2s ease;"></div>
@@ -721,6 +778,169 @@
       </div>
 
       <div class="calc-result" id="calc-result">Suggested lot size: —</div>
+    </div>
+  </section>
+
+  <!-- FUNDAMENTALS -->
+  <section class="tabpane" id="pane-fundamentals">
+    <div class="panel">
+      <h3>💪 Currency strength meter</h3>
+      <div class="sub" style="margin-bottom:14px;">Economic Health + Job Market + Inflation &amp; Central Bank + Risk Environment, scored from Actual vs Previous data. Click any pill to edit its data.</div>
+      <div class="fx-meter" id="fxMeter"></div>
+      <div class="fx-cal-banner ro-hide" id="fxDataRangeBanner" style="display:none;"></div>
+    </div>
+
+    <div class="panel ro-hide">
+      <h3>🌍 Risk environment</h3>
+      <div class="sub" style="margin-bottom:0;">Global investor mood — affects safe havens (USD, JPY, CHF, Gold, Silver) and risk currencies (AUD, NZD, CAD) in opposite directions. EUR/GBP unaffected.</div>
+      <div class="fx-risk-toggle">
+        <div class="fx-risk-btn" data-risk="risk-off" id="fxRiskOffBtn">🛡 Risk-OFF (fear)</div>
+        <div class="fx-risk-btn" data-risk="neutral" id="fxRiskNeutralBtn">⚖ Neutral</div>
+        <div class="fx-risk-btn" data-risk="risk-on" id="fxRiskOnBtn">📈 Risk-ON (greed)</div>
+      </div>
+    </div>
+
+    <div class="panel ro-hide">
+      <h3>✏️ Edit currency data</h3>
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="field">
+          <label>CURRENCY</label>
+          <select id="fxCurrencySelect" style="width:100%;"></select>
+        </div>
+      </div>
+
+      <div class="subcard" id="fxSectionEcon">
+        <div class="fx-collapse-head open" data-target="fxEconBody">
+          <div class="subcard-title" style="margin-bottom:0;">A) Economic Health <span id="fxEconTotal"></span></div>
+          <span class="chev">▶</span>
+        </div>
+        <div class="fx-collapse-body open" id="fxEconBody"></div>
+      </div>
+
+      <div class="subcard" id="fxSectionJob">
+        <div class="fx-collapse-head open" data-target="fxJobBody">
+          <div class="subcard-title" style="margin-bottom:0;">B) Job Market <span id="fxJobTotal"></span></div>
+          <span class="chev">▶</span>
+        </div>
+        <div class="fx-collapse-body open" id="fxJobBody"></div>
+      </div>
+
+      <div class="subcard" id="fxSectionInflation">
+        <div class="fx-collapse-head open" data-target="fxInflationBody">
+          <div class="subcard-title" style="margin-bottom:0;">C) Inflation &amp; Central Bank <span id="fxInflationTotal"></span></div>
+          <span class="chev">▶</span>
+        </div>
+        <div class="fx-collapse-body open" id="fxInflationBody">
+          <div id="fxInflationItems"></div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="field">
+              <label>CENTRAL BANK TONE</label>
+              <select id="fxTone">
+                <option value="Neutral">Neutral</option>
+                <option value="Hawkish">Hawkish (+1)</option>
+                <option value="Dovish">Dovish (−1)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subcard" id="fxSectionCot">
+        <div class="fx-collapse-head" data-target="fxCotBody">
+          <div class="subcard-title" style="margin-bottom:0;">COT (Institutional Positioning) — separate from score</div>
+          <span class="chev">▶</span>
+        </div>
+        <div class="fx-collapse-body" id="fxCotBody">
+          <div class="form-grid">
+            <div class="field">
+              <label>INSTITUTIONAL BIAS</label>
+              <select id="fxCotBias">
+                <option value="Neutral">Neutral</option>
+                <option value="Long">Long</option>
+                <option value="Short">Short</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>CROWDED POSITIONING?</label>
+              <div class="dir-toggle">
+                <div class="grade-btn" data-crowded="no">No</div>
+                <div class="grade-btn" data-crowded="yes">Yes — crowded</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn" id="fxSaveBtn">Save this currency</button>
+        <span id="fxSaveMsg" class="sub"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>🥇 Gold &amp; Silver (derived)</h3>
+      <div class="sub" style="margin-bottom:14px;">Economic Health, Job Market, and Inflation &amp; CB are auto-inverted from USD's own data — no need to re-enter. Only these two are manual:</div>
+      <div class="form-grid ro-hide">
+        <div class="field">
+          <label>10-YEAR TREASURY YIELD TREND</label>
+          <select id="fxYieldTrend">
+            <option value="Flat">Flat</option>
+            <option value="Rising">Rising (bearish metals)</option>
+            <option value="Falling">Falling (bullish metals)</option>
+          </select>
+        </div>
+      </div>
+      <div id="fxMetalsBreakdown" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="panel">
+      <h3>⚖️ Pair bias calculator</h3>
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="field">
+          <label>BASE</label>
+          <select id="fxPairBase"></select>
+        </div>
+        <div class="field">
+          <label>QUOTE</label>
+          <select id="fxPairQuote"></select>
+        </div>
+      </div>
+      <div id="fxPairResult"></div>
+    </div>
+
+    <div class="panel ro-hide">
+      <h3>📅 Economic calendar — paste &amp; parse</h3>
+      <div class="sub" style="margin-bottom:12px;">Copy a calendar page from ForexFactory (or similar) and paste the raw text below. Nothing is saved until you review the preview table.</div>
+      <textarea id="fxCalPasteBox" style="min-height:120px;width:100%;" placeholder="Paste copied calendar text here…"></textarea>
+      <div class="form-actions" style="margin-top:12px;">
+        <button class="btn secondary" id="fxCalParseBtn">Parse &amp; Preview</button>
+      </div>
+      <div id="fxCalPreviewWrap" style="display:none;margin-top:16px;">
+        <div class="sub" id="fxCalPreviewSummary" style="margin-bottom:10px;"></div>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto;">
+          <table class="fx-table" id="fxCalPreviewTable"></table>
+        </div>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn" id="fxCalImportBtn">Import these events</button>
+          <button class="btn secondary" id="fxCalCancelBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>⏰ Upcoming events</h3>
+      <div id="fxUpcomingList"></div>
+      <div class="empty" id="fxUpcomingEmpty" style="display:none;">No upcoming events added yet.</div>
+    </div>
+
+    <div class="panel ro-hide">
+      <h3>📸 History &amp; trend</h3>
+      <div class="sub" style="margin-bottom:12px;">Save a snapshot of today's scores so you can see week-over-week whether a currency is getting stronger or weaker.</div>
+      <button class="btn secondary" id="fxSnapshotBtn">Save snapshot now</button>
+      <div style="overflow-x:auto;margin-top:16px;">
+        <table class="fx-table" id="fxHistoryTable"></table>
+      </div>
+      <div class="empty" id="fxHistoryEmpty" style="display:none;">No snapshots saved yet.</div>
     </div>
   </section>
 
@@ -1975,6 +2195,616 @@ document.querySelectorAll(".cards .card").forEach(card=>{
     card.style.transform = "perspective(600px) rotateX(0) rotateY(0) translateY(0)";
   });
 });
+
+/* ================= FUNDAMENTALS MODULE (Module 2) ================= */
+
+const FX_CURRENCIES = ["USD","EUR","GBP","JPY","CHF","AUD","CAD","NZD"];
+const FX_SAFE_HAVEN = ["USD","JPY","CHF"];
+const FX_RISK_CCY = ["AUD","NZD","CAD"];
+
+const FX_ECON_ITEMS = [
+  {key:"gdp", label:"GDP (QoQ)"},
+  {key:"mpmi", label:"Manufacturing PMI"},
+  {key:"spmi", label:"Services PMI"},
+  {key:"retail", label:"Retail Sales"},
+  {key:"confidence", label:"Consumer Confidence"}
+];
+const FX_JOB_ITEMS = [
+  {key:"nfp", label:"Non-Farm Payroll"},
+  {key:"unemployment", label:"Unemployment Rate", inverse:true},
+  {key:"claims", label:"Jobless Claims", inverse:true},
+  {key:"adp", label:"ADP Employment"},
+  {key:"jolts", label:"JOLTS Job Openings"}
+];
+const FX_INFLATION_ITEMS = [
+  {key:"cpi", label:"CPI (YoY)"},
+  {key:"ppi", label:"PPI (YoY)"},
+  {key:"pce", label:"PCE (YoY)"},
+  {key:"rate", label:"Interest Rate"}
+];
+
+/* ---- Scoring engine (verified against worked examples before implementation) ---- */
+function fxItemScore(prev, actual, inverse){
+  const p = parseFloat(prev), a = parseFloat(actual);
+  if (isNaN(p) || isNaN(a)) return 0;
+  if (a === p) return 0;
+  const up = a > p;
+  return inverse ? (up ? -1 : 1) : (up ? 1 : -1);
+}
+function fxSectionTotal(dataObj, items){
+  return items.reduce((sum, it) => {
+    const e = dataObj && dataObj[it.key];
+    return sum + fxItemScore(e && e.prev, e && e.actual, it.inverse);
+  }, 0);
+}
+function fxToneScore(tone){
+  if (tone === "Hawkish") return 1;
+  if (tone === "Dovish") return -1;
+  return 0;
+}
+function fxRiskScore(ccy, riskEnv){
+  if (!riskEnv || riskEnv === "neutral") return 0;
+  if (FX_SAFE_HAVEN.includes(ccy)) return riskEnv === "risk-off" ? 1 : -1;
+  if (FX_RISK_CCY.includes(ccy)) return riskEnv === "risk-off" ? -1 : 1;
+  return 0;
+}
+function fxCurrencyBreakdown(ccy, data){
+  const d = (data && data[ccy]) || {};
+  const econ = fxSectionTotal(d.econ, FX_ECON_ITEMS);
+  const job = fxSectionTotal(d.job, FX_JOB_ITEMS);
+  const inflation = fxSectionTotal(d.inflation, FX_INFLATION_ITEMS) + fxToneScore(d.inflation && d.inflation.tone);
+  const risk = fxRiskScore(ccy, data && data.riskEnvironment);
+  return { econ, job, inflation, risk, total: econ + job + inflation + risk };
+}
+function fxMetalBreakdown(data){
+  const usd = (data && data.USD) || {};
+  const econUSD = fxSectionTotal(usd.econ, FX_ECON_ITEMS);
+  const jobUSD = fxSectionTotal(usd.job, FX_JOB_ITEMS);
+  const inflUSD = fxSectionTotal(usd.inflation, FX_INFLATION_ITEMS) + fxToneScore(usd.inflation && usd.inflation.tone);
+  const yieldTrend = (data && data.yieldTrend) || "Flat";
+  const yieldScore = yieldTrend === "Rising" ? -1 : yieldTrend === "Falling" ? 1 : 0;
+  const riskEnv = data && data.riskEnvironment;
+  const riskScore = (!riskEnv || riskEnv === "neutral") ? 0 : (riskEnv === "risk-off" ? 1 : -1);
+  const econ = -econUSD, job = -jobUSD, inflation = -inflUSD;
+  return { econ, job, inflation, yieldScore, riskScore, total: econ + job + inflation + yieldScore + riskScore };
+}
+function fxBiasLabel(score){
+  if (score >= 4) return { label:"Strong Bullish", cls:"strong-bull" };
+  if (score >= 2) return { label:"Bullish", cls:"bull" };
+  if (score <= -4) return { label:"Strong Bearish", cls:"strong-bear" };
+  if (score <= -2) return { label:"Bearish", cls:"bear" };
+  return { label:"Neutral / No Trade", cls:"neutral" };
+}
+function fxSign(n){ return (n>0?'+':'') + n; }
+function fxScoreCls(n){ return n>0?"pos":n<0?"neg":"zero"; }
+
+/* ---- Firestore refs ---- */
+const fxDataRef = doc(db, "meta", "fxFundamentals");
+const fxEventsCol = collection(db, "fxEvents");
+const fxHistoryCol = collection(db, "fxHistory");
+
+let fxData = { riskEnvironment: "neutral", yieldTrend: "Flat" };
+let fxEvents = [];
+let fxNotifiedIds = new Set();
+let fxNotificationAsked = false;
+
+/* ---- Collapsible section headers (generic, used by Fundamentals subcards) ---- */
+document.addEventListener("click", (e)=>{
+  const head = e.target.closest(".fx-collapse-head");
+  if (!head) return;
+  head.classList.toggle("open");
+  const body = document.getElementById(head.dataset.target);
+  if (body) body.classList.toggle("open");
+});
+
+/* ---- Row rendering for a section ---- */
+function fxRenderSectionRows(containerId, items, dataObj){
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map(it=>{
+    const e = (dataObj && dataObj[it.key]) || {};
+    const score = fxItemScore(e.prev, e.actual, it.inverse);
+    return `
+      <div class="fx-item-row" data-key="${it.key}">
+        <div class="fx-item-label">${it.label}${it.inverse ? ' <span style="opacity:.55;">(lower=better)</span>' : ''}</div>
+        <input type="number" step="any" class="fx-prev-input" value="${e.prev ?? ''}" placeholder="Previous">
+        <input type="number" step="any" class="fx-actual-input" value="${e.actual ?? ''}" placeholder="Actual">
+        <div class="fx-item-score ${fxScoreCls(score)}">${fxSign(score)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function fxReadDraft(){
+  function readSection(containerId, items){
+    const obj = {};
+    items.forEach(it=>{
+      const row = document.querySelector(`#${containerId} .fx-item-row[data-key="${it.key}"]`);
+      obj[it.key] = {
+        prev: row ? row.querySelector(".fx-prev-input").value : "",
+        actual: row ? row.querySelector(".fx-actual-input").value : ""
+      };
+    });
+    return obj;
+  }
+  const econ = readSection("fxEconBody", FX_ECON_ITEMS);
+  const job = readSection("fxJobBody", FX_JOB_ITEMS);
+  const inflation = readSection("fxInflationItems", FX_INFLATION_ITEMS);
+  inflation.tone = document.getElementById("fxTone").value;
+  const crowdedBtn = document.querySelector('#fxSectionCot [data-crowded].sel');
+  const cot = {
+    bias: document.getElementById("fxCotBias").value,
+    crowded: crowdedBtn ? crowdedBtn.dataset.crowded === "yes" : false
+  };
+  return { econ, job, inflation, cot };
+}
+
+function fxUpdateLiveTotals(){
+  const ccy = document.getElementById("fxCurrencySelect").value;
+  const draft = fxReadDraft();
+  const econT = fxSectionTotal(draft.econ, FX_ECON_ITEMS);
+  const jobT = fxSectionTotal(draft.job, FX_JOB_ITEMS);
+  const inflT = fxSectionTotal(draft.inflation, FX_INFLATION_ITEMS) + fxToneScore(draft.inflation.tone);
+  document.getElementById("fxEconTotal").textContent = `(${fxSign(econT)})`;
+  document.getElementById("fxJobTotal").textContent = `(${fxSign(jobT)})`;
+  document.getElementById("fxInflationTotal").textContent = `(${fxSign(inflT)})`;
+  // live-update item score pills as user types, without waiting for Save
+  document.querySelectorAll(".fx-item-row").forEach(row=>{
+    const prevEl = row.querySelector(".fx-prev-input"), actEl = row.querySelector(".fx-actual-input");
+    if (!prevEl || !actEl) return;
+    const allItems = [...FX_ECON_ITEMS, ...FX_JOB_ITEMS, ...FX_INFLATION_ITEMS];
+    const it = allItems.find(i=>i.key===row.dataset.key);
+    const score = fxItemScore(prevEl.value, actEl.value, it && it.inverse);
+    const scoreEl = row.querySelector(".fx-item-score");
+    scoreEl.textContent = fxSign(score);
+    scoreEl.className = "fx-item-score " + fxScoreCls(score);
+  });
+}
+document.getElementById("pane-fundamentals").addEventListener("input", (e)=>{
+  if (e.target.closest(".fx-item-row") || e.target.id === "fxTone") fxUpdateLiveTotals();
+});
+
+document.querySelectorAll('#fxSectionCot [data-crowded]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll('#fxSectionCot [data-crowded]').forEach(b=>b.classList.remove("sel"));
+    btn.classList.add("sel");
+  });
+});
+
+function fxRenderCurrencyEditor(){
+  const ccy = document.getElementById("fxCurrencySelect").value;
+  const d = fxData[ccy] || {};
+  fxRenderSectionRows("fxEconBody", FX_ECON_ITEMS, d.econ);
+  fxRenderSectionRows("fxJobBody", FX_JOB_ITEMS, d.job);
+  fxRenderSectionRows("fxInflationItems", FX_INFLATION_ITEMS, d.inflation);
+  document.getElementById("fxTone").value = (d.inflation && d.inflation.tone) || "Neutral";
+  document.getElementById("fxCotBias").value = (d.cot && d.cot.bias) || "Neutral";
+  const crowded = !!(d.cot && d.cot.crowded);
+  document.querySelectorAll('#fxSectionCot [data-crowded]').forEach(b=>{
+    b.classList.toggle("sel", (b.dataset.crowded === "yes") === crowded);
+  });
+  fxUpdateLiveTotals();
+}
+
+/* ---- Strength meter ---- */
+function fxRenderMeter(){
+  const selectedCcy = document.getElementById("fxCurrencySelect") ? document.getElementById("fxCurrencySelect").value : null;
+  const entries = FX_CURRENCIES.map(ccy => ({ ccy, total: fxCurrencyBreakdown(ccy, fxData).total }));
+  const metalTotal = fxMetalBreakdown(fxData).total;
+  entries.push({ ccy:"XAU", total: metalTotal });
+  entries.push({ ccy:"XAG", total: metalTotal });
+  entries.sort((a,b)=>b.total-a.total);
+  document.getElementById("fxMeter").innerHTML = entries.map(e=>{
+    const active = e.ccy === selectedCcy ? "active" : "";
+    return `<div class="fx-pill ${active}" data-ccy="${e.ccy}"><div class="ccy">${e.ccy}</div><div class="score ${fxScoreCls(e.total)}">${fxSign(e.total)}</div></div>`;
+  }).join("");
+}
+document.getElementById("fxMeter").addEventListener("click", (e)=>{
+  const pill = e.target.closest(".fx-pill");
+  if (!pill) return;
+  const ccy = pill.dataset.ccy;
+  if (FX_CURRENCIES.includes(ccy)){
+    document.getElementById("fxCurrencySelect").value = ccy;
+    fxRenderCurrencyEditor();
+    document.getElementById("fxSectionEcon").scrollIntoView({ behavior:"smooth", block:"start" });
+  } else {
+    document.getElementById("fxMetalsBreakdown").scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  fxRenderMeter();
+});
+
+/* ---- Risk environment toggle ---- */
+function fxRenderRiskToggle(){
+  const env = fxData.riskEnvironment || "neutral";
+  document.getElementById("fxRiskOffBtn").classList.toggle("sel-off", env === "risk-off");
+  document.getElementById("fxRiskNeutralBtn").classList.toggle("sel-neutral", env === "neutral");
+  document.getElementById("fxRiskOnBtn").classList.toggle("sel-on", env === "risk-on");
+}
+["fxRiskOffBtn","fxRiskNeutralBtn","fxRiskOnBtn"].forEach(id=>{
+  document.getElementById(id).addEventListener("click", async ()=>{
+    if (readOnlyMode) return;
+    const btn = document.getElementById(id);
+    const env = btn.dataset.risk;
+    fxData.riskEnvironment = env; // optimistic
+    fxRenderRiskToggle(); fxRenderMeter(); fxRenderMetals(); fxUpdateLiveTotals();
+    try{ await setDoc(fxDataRef, { riskEnvironment: env }, { merge: true }); }
+    catch(err){ showToast("✗ " + err.message, "error"); }
+  });
+});
+
+/* ---- Gold & Silver breakdown ---- */
+function fxRenderMetals(){
+  const m = fxMetalBreakdown(fxData);
+  const bias = fxBiasLabel(m.total);
+  document.getElementById("fxYieldTrend").value = fxData.yieldTrend || "Flat";
+  document.getElementById("fxMetalsBreakdown").innerHTML = `
+    <div class="fx-item-row" style="grid-template-columns:1fr 70px;"><div class="fx-item-label">Economic Health (inverse of USD)</div><div class="fx-item-score ${fxScoreCls(m.econ)}">${fxSign(m.econ)}</div></div>
+    <div class="fx-item-row" style="grid-template-columns:1fr 70px;"><div class="fx-item-label">Job Market (inverse of USD)</div><div class="fx-item-score ${fxScoreCls(m.job)}">${fxSign(m.job)}</div></div>
+    <div class="fx-item-row" style="grid-template-columns:1fr 70px;"><div class="fx-item-label">Inflation &amp; CB (inverse of USD)</div><div class="fx-item-score ${fxScoreCls(m.inflation)}">${fxSign(m.inflation)}</div></div>
+    <div class="fx-item-row" style="grid-template-columns:1fr 70px;"><div class="fx-item-label">10Y Treasury Yield Trend</div><div class="fx-item-score ${fxScoreCls(m.yieldScore)}">${fxSign(m.yieldScore)}</div></div>
+    <div class="fx-item-row" style="grid-template-columns:1fr 70px;"><div class="fx-item-label">Risk Environment</div><div class="fx-item-score ${fxScoreCls(m.riskScore)}">${fxSign(m.riskScore)}</div></div>
+    <div class="fx-section-total"><span>Total (XAUUSD &amp; XAGUSD both)</span><b class="${fxScoreCls(m.total)}" style="font-family:'IBM Plex Mono',monospace;">${fxSign(m.total)}</b></div>
+    <div style="margin-top:10px;"><span class="fx-bias-band ${bias.cls}">${bias.label}</span></div>
+  `;
+}
+document.getElementById("fxYieldTrend").addEventListener("change", async ()=>{
+  if (readOnlyMode) return;
+  const val = document.getElementById("fxYieldTrend").value;
+  fxData.yieldTrend = val;
+  fxRenderMetals(); fxRenderMeter();
+  try{ await setDoc(fxDataRef, { yieldTrend: val }, { merge: true }); }
+  catch(err){ showToast("✗ " + err.message, "error"); }
+});
+
+/* ---- Pair bias calculator ---- */
+function fxPopulatePairSelectors(){
+  const opts = [...FX_CURRENCIES, "XAU", "XAG"].map(c=>`<option value="${c}">${c}</option>`).join("");
+  document.getElementById("fxPairBase").innerHTML = opts;
+  document.getElementById("fxPairQuote").innerHTML = opts;
+  document.getElementById("fxPairBase").value = "EUR";
+  document.getElementById("fxPairQuote").value = "USD";
+}
+function fxRenderPairResult(){
+  const base = document.getElementById("fxPairBase").value;
+  const quote = document.getElementById("fxPairQuote").value;
+  const wrap = document.getElementById("fxPairResult");
+  const isMetal = base === "XAU" || base === "XAG";
+  let diff, baseScore, quoteScore;
+  if (isMetal){
+    baseScore = fxMetalBreakdown(fxData).total;
+    quoteScore = fxCurrencyBreakdown("USD", fxData).total;
+    diff = baseScore;
+  } else {
+    if (base === quote){ wrap.innerHTML = '<div class="sub">Choose two different currencies.</div>'; return; }
+    baseScore = fxCurrencyBreakdown(base, fxData).total;
+    quoteScore = fxCurrencyBreakdown(quote, fxData).total;
+    diff = baseScore - quoteScore;
+  }
+  const bias = fxBiasLabel(diff);
+  const cot = (fxData[base] && fxData[base].cot) || null;
+  let cotNote = "";
+  if (cot && cot.bias && cot.bias !== "Neutral"){
+    const fundamentalDir = diff > 0 ? "Long" : diff < 0 ? "Short" : "Neutral";
+    if (cot.bias === fundamentalDir){
+      cotNote = `<div class="rg-note" style="color:var(--win);margin-top:8px;">✓ COT confirms — institutions are also ${cot.bias.toLowerCase()} ${base}.</div>`;
+    } else {
+      cotNote = `<div class="rg-note" style="color:var(--loss);margin-top:8px;">⚠ Warning — COT shows institutions are ${cot.bias.toLowerCase()} ${base}, opposite to this fundamental bias.</div>`;
+    }
+    if (cot.crowded) cotNote += `<div class="rg-note" style="color:var(--gold);">⚠ Positioning flagged as crowded — correction risk.</div>`;
+  }
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
+      <span class="fx-bias-band ${bias.cls}">${base}${isMetal?'':quote} ${bias.label}</span>
+      <span class="sub">Score gap: ${fxSign(diff)}</span>
+    </div>
+    <div class="sub">${base}: ${fxSign(baseScore)} &nbsp;|&nbsp; ${isMetal?'USD':quote}: ${fxSign(quoteScore)}</div>
+    ${cotNote}
+  `;
+}
+document.getElementById("fxPairBase").addEventListener("change", ()=>{
+  const base = document.getElementById("fxPairBase").value;
+  const quoteSel = document.getElementById("fxPairQuote");
+  if (base === "XAU" || base === "XAG"){ quoteSel.value = "USD"; quoteSel.disabled = true; }
+  else { quoteSel.disabled = false; }
+  fxRenderPairResult();
+});
+document.getElementById("fxPairQuote").addEventListener("change", fxRenderPairResult);
+
+/* ---- Save currency data (with auto-shift: new Actual -> old Actual becomes new Previous) ---- */
+document.getElementById("fxCurrencySelect").addEventListener("change", fxRenderCurrencyEditor);
+document.getElementById("fxSaveBtn").addEventListener("click", async ()=>{
+  if (readOnlyMode) return;
+  const ccy = document.getElementById("fxCurrencySelect").value;
+  const draft = fxReadDraft();
+  const existing = fxData[ccy] || {};
+
+  function mergeSection(existingSec, draftSec, items){
+    const out = {};
+    items.forEach(it=>{
+      const oldEntry = (existingSec && existingSec[it.key]) || {};
+      const typedActual = draft && draftSec[it.key] ? draftSec[it.key].actual : "";
+      const typedPrev = draftSec[it.key] ? draftSec[it.key].prev : "";
+      // Auto-shift: if the typed Actual differs from what was already stored as Actual,
+      // the OLD stored actual becomes the new Previous automatically.
+      if (typedActual !== "" && oldEntry.actual !== undefined && String(oldEntry.actual) !== String(typedActual)){
+        out[it.key] = { prev: oldEntry.actual, actual: typedActual };
+      } else {
+        out[it.key] = { prev: typedPrev, actual: typedActual };
+      }
+    });
+    return out;
+  }
+
+  const newEcon = mergeSection(existing.econ, draft.econ, FX_ECON_ITEMS);
+  const newJob = mergeSection(existing.job, draft.job, FX_JOB_ITEMS);
+  const newInflation = mergeSection(existing.inflation, draft.inflation, FX_INFLATION_ITEMS);
+  newInflation.tone = draft.inflation.tone;
+
+  const payload = { econ: newEcon, job: newJob, inflation: newInflation, cot: draft.cot, updatedAt: Date.now() };
+  fxData[ccy] = payload; // optimistic
+  fxRenderCurrencyEditor(); fxRenderMeter(); fxRenderMetals();
+  document.getElementById("fxSaveMsg").textContent = "✓ Saved";
+  showToast(`✓ ${ccy} fundamentals saved`, "success");
+  try{
+    await setDoc(fxDataRef, { [ccy]: payload }, { merge: true });
+  } catch(err){
+    showToast("✗ " + err.message, "error");
+  }
+});
+
+/* ---- Weekly history / trend ---- */
+function fxRenderHistory(history){
+  const table = document.getElementById("fxHistoryTable");
+  const emptyEl = document.getElementById("fxHistoryEmpty");
+  if (!history.length){ table.innerHTML=""; emptyEl.style.display="block"; return; }
+  emptyEl.style.display = "none";
+  const sorted = [...history].sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+  table.innerHTML = `
+    <thead><tr><th>Date</th>${FX_CURRENCIES.map(c=>`<th>${c}</th>`).join("")}<th>XAU</th><th>XAG</th></tr></thead>
+    <tbody>
+      ${sorted.map(h=>`
+        <tr>
+          <td>${h.date}</td>
+          ${FX_CURRENCIES.map(c=>`<td class="${fxScoreCls(h.scores?.[c]||0)}">${fxSign(h.scores?.[c]||0)}</td>`).join("")}
+          <td class="${fxScoreCls(h.scores?.XAU||0)}">${fxSign(h.scores?.XAU||0)}</td>
+          <td class="${fxScoreCls(h.scores?.XAG||0)}">${fxSign(h.scores?.XAG||0)}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+}
+document.getElementById("fxSnapshotBtn").addEventListener("click", async ()=>{
+  if (readOnlyMode) return;
+  const scores = {};
+  FX_CURRENCIES.forEach(c => scores[c] = fxCurrencyBreakdown(c, fxData).total);
+  const metalTotal = fxMetalBreakdown(fxData).total;
+  scores.XAU = metalTotal; scores.XAG = metalTotal;
+  const dateStr = new Date().toISOString().slice(0,10);
+  try{
+    await addDoc(fxHistoryCol, { date: dateStr, scores, createdAt: Date.now() });
+    showToast("✓ Snapshot saved", "success");
+  } catch(err){ showToast("✗ " + err.message, "error"); }
+});
+
+/* ---- Economic calendar: paste & parse (best-effort — always requires review before import) ---- */
+const FX_DAY_ABBR = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const FX_MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const FX_CAL_CCY_CODES = [...FX_CURRENCIES, "CNY", "All"];
+
+function fxIsTimeMarker(line){
+  return /^\d{1,2}:\d{2}(am|pm)$/i.test(line) || line === "All Day" || line === "Tentative" || /^Day \d+$/.test(line);
+}
+function fxIsDateLine(line){
+  const m = line.match(/^([A-Za-z]{3})\s+(\d{1,2})(?:st|nd|rd|th)?$/);
+  return m && FX_MONTHS.hasOwnProperty(m[1]) ? m : null;
+}
+function fxParseCalendarText(text){
+  const lines = text.split("\n").map(l=>l.trim());
+  const events = [];
+  let curDate = null;
+  let curTime = "";
+  const now = new Date();
+
+  for (let i=0;i<lines.length;i++){
+    const line = lines[i];
+    if (!line) continue;
+    if (FX_DAY_ABBR.includes(line)) continue; // day-abbreviation line, date line follows separately
+    const dm = fxIsDateLine(line);
+    if (dm){
+      const month = FX_MONTHS[dm[1]];
+      const day = parseInt(dm[2],10);
+      let year = now.getFullYear();
+      // if this month is far ahead of current month (e.g. pasted in Dec about next Jan), roll year forward
+      if (month < now.getMonth() - 6) year += 1;
+      curDate = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      continue;
+    }
+    if (fxIsTimeMarker(line)){ curTime = line; continue; }
+    if (FX_CAL_CCY_CODES.includes(line)){
+      const ccy = line;
+      let j = i+1;
+      while (j < lines.length && !lines[j]) j++;
+      const eventName = lines[j] || "";
+      let k = j+1;
+      const values = [];
+      while (k < lines.length){
+        const l2 = lines[k];
+        if (!l2){ k++; continue; }
+        if (FX_CAL_CCY_CODES.includes(l2) || FX_DAY_ABBR.includes(l2) || fxIsDateLine(l2) || fxIsTimeMarker(l2)) break;
+        values.push(l2);
+        k++;
+        if (values.length >= 3) break;
+      }
+      if (FX_CURRENCIES.includes(ccy) && eventName){
+        events.push({ date: curDate, time: curTime, currency: ccy, event: eventName, values });
+      }
+      i = k - 1;
+      continue;
+    }
+  }
+  return events;
+}
+
+let fxParsedEvents = [];
+document.getElementById("fxCalParseBtn").addEventListener("click", ()=>{
+  const text = document.getElementById("fxCalPasteBox").value;
+  fxParsedEvents = fxParseCalendarText(text);
+  if (!fxParsedEvents.length){
+    showToast("✗ No events found for tracked currencies (USD/EUR/GBP/JPY/CHF/AUD/CAD/NZD).", "error");
+    return;
+  }
+  const dates = fxParsedEvents.map(e=>e.date).filter(Boolean).sort();
+  document.getElementById("fxCalPreviewSummary").textContent = dates.length
+    ? `📅 This paste covers: ${dates[0]} → ${dates[dates.length-1]} · ${fxParsedEvents.length} events for tracked currencies · please review before importing`
+    : `${fxParsedEvents.length} events found — dates unclear, please fill in manually below`;
+  const table = document.getElementById("fxCalPreviewTable");
+  table.innerHTML = `
+    <thead><tr><th>Date</th><th>Time</th><th>Ccy</th><th>Event</th><th>Val 1</th><th>Val 2</th><th>Val 3</th><th></th></tr></thead>
+    <tbody>
+      ${fxParsedEvents.map(e=>`
+        <tr>
+          <td contenteditable>${e.date||''}</td>
+          <td contenteditable>${e.time||''}</td>
+          <td contenteditable>${e.currency}</td>
+          <td contenteditable>${escapeHtml(e.event)}</td>
+          <td contenteditable>${escapeHtml(e.values[0]||'')}</td>
+          <td contenteditable>${escapeHtml(e.values[1]||'')}</td>
+          <td contenteditable>${escapeHtml(e.values[2]||'')}</td>
+          <td><button class="rowbtn fx-del-row">✕</button></td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+  document.getElementById("fxCalPreviewWrap").style.display = "block";
+});
+document.getElementById("fxCalPreviewTable").addEventListener("click", (e)=>{
+  if (e.target.classList.contains("fx-del-row")) e.target.closest("tr").remove();
+});
+document.getElementById("fxCalCancelBtn").addEventListener("click", ()=>{
+  document.getElementById("fxCalPreviewWrap").style.display = "none";
+});
+document.getElementById("fxCalImportBtn").addEventListener("click", async ()=>{
+  if (readOnlyMode) return;
+  const rows = document.querySelectorAll("#fxCalPreviewTable tbody tr");
+  let count = 0;
+  for (const row of rows){
+    const cells = row.querySelectorAll("td");
+    const date = cells[0].textContent.trim();
+    const time = cells[1].textContent.trim();
+    const ccy = cells[2].textContent.trim();
+    const eventName = cells[3].textContent.trim();
+    const v1 = cells[4].textContent.trim(), v2 = cells[5].textContent.trim(), v3 = cells[6].textContent.trim();
+    if (!date || !ccy || !eventName) continue;
+    try{
+      await addDoc(fxEventsCol, { date, time, currency: ccy, event: eventName, val1:v1, val2:v2, val3:v3, createdAt: Date.now() });
+      count++;
+    } catch(err){ /* skip failed row, continue importing the rest */ }
+  }
+  showToast(`✓ ${count} event(s) imported`, "success");
+  document.getElementById("fxCalPasteBox").value = "";
+  document.getElementById("fxCalPreviewWrap").style.display = "none";
+});
+
+/* ---- Upcoming events + 15-minute browser notification (only while this tab is open) ---- */
+function fxEventDateTime(e){
+  if (!e.date) return null;
+  const m = (e.time||"").match(/(\d{1,2}):(\d{2})(am|pm)/i);
+  let h=0, mi=0;
+  if (m){
+    h = parseInt(m[1],10) % 12;
+    mi = parseInt(m[2],10);
+    if (/pm/i.test(m[3])) h += 12;
+  }
+  const d = new Date(e.date + "T00:00:00");
+  if (isNaN(d.getTime())) return null;
+  d.setHours(h, mi, 0, 0);
+  return d;
+}
+function fxRenderUpcoming(){
+  const list = document.getElementById("fxUpcomingList");
+  const emptyEl = document.getElementById("fxUpcomingEmpty");
+  const now = new Date();
+  const upcoming = fxEvents
+    .map(e => ({ ...e, dt: fxEventDateTime(e) }))
+    .filter(e => e.dt && e.dt > now)
+    .sort((a,b) => a.dt - b.dt)
+    .slice(0, 40);
+  if (!upcoming.length){ list.innerHTML = ""; emptyEl.style.display = "block"; return; }
+  emptyEl.style.display = "none";
+  list.innerHTML = upcoming.map(e => `
+    <div class="reason-row" style="grid-template-columns:130px 1fr 80px;">
+      <div>${e.date} ${e.time||''}</div>
+      <div>${e.currency} — ${escapeHtml(e.event)}</div>
+      <div style="text-align:right;">${readOnlyMode ? "" : `<button class="rowbtn fx-del-event" data-id="${e.id}">Delete</button>`}</div>
+    </div>
+  `).join("");
+}
+document.getElementById("fxUpcomingList").addEventListener("click", async (e)=>{
+  if (!e.target.classList.contains("fx-del-event")) return;
+  if (readOnlyMode) return;
+  const id = e.target.dataset.id;
+  fxEvents = fxEvents.filter(ev => ev.id !== id);
+  fxRenderUpcoming();
+  try{ await deleteDoc(doc(db, "fxEvents", id)); }
+  catch(err){ showToast("✗ " + err.message, "error"); }
+});
+function fxCheckNotifications(){
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const now = new Date();
+  fxEvents.forEach(e=>{
+    const dt = fxEventDateTime(e);
+    if (!dt) return;
+    const diffMin = (dt - now) / 60000;
+    if (diffMin > 0 && diffMin <= 15 && !fxNotifiedIds.has(e.id)){
+      fxNotifiedIds.add(e.id);
+      try{ new Notification(`⏰ ${e.currency} — ${e.event}`, { body: `In about ${Math.round(diffMin)} minute(s)` }); } catch(err){}
+    }
+  });
+}
+setInterval(fxCheckNotifications, 60000);
+
+/* ---- Tab open: request notification permission once, lazily (not on page load) ---- */
+document.querySelector('nav.tabs button[data-tab="fundamentals"]').addEventListener("click", ()=>{
+  if (!fxNotificationAsked && "Notification" in window && Notification.permission === "default"){
+    fxNotificationAsked = true;
+    Notification.requestPermission();
+  }
+});
+
+/* ---- Init: populate dropdowns + attach live Firestore listeners ---- */
+function fxInit(){
+  document.getElementById("fxCurrencySelect").innerHTML = FX_CURRENCIES.map(c=>`<option value="${c}">${c}</option>`).join("");
+  fxPopulatePairSelectors();
+
+  onSnapshot(fxDataRef, (snap)=>{
+    fxData = snap.exists() ? snap.data() : { riskEnvironment:"neutral", yieldTrend:"Flat" };
+    if (!fxData.riskEnvironment) fxData.riskEnvironment = "neutral";
+    if (!fxData.yieldTrend) fxData.yieldTrend = "Flat";
+    fxRenderMeter();
+    fxRenderRiskToggle();
+    fxRenderMetals();
+    fxRenderCurrencyEditor();
+    fxRenderPairResult();
+  });
+
+  onSnapshot(fxEventsCol, (snap)=>{
+    fxEvents = [];
+    snap.forEach(d => fxEvents.push({ id: d.id, ...d.data() }));
+    fxRenderUpcoming();
+    fxCheckNotifications();
+  });
+
+  getDocs(fxHistoryCol).then(snap=>{
+    const history = [];
+    snap.forEach(d => history.push({ id: d.id, ...d.data() }));
+    fxRenderHistory(history);
+  }).catch(()=>{});
+  onSnapshot(fxHistoryCol, (snap)=>{
+    const history = [];
+    snap.forEach(d => history.push({ id: d.id, ...d.data() }));
+    fxRenderHistory(history);
+  });
+}
+fxInit();
 
 initApp();
 
