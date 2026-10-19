@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Trading OS — Journal</title>
+<title>My Trading OS — Journal + Fundamentals</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Playfair+Display:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -291,10 +291,6 @@
     border:1px solid var(--gold-soft);background:rgba(201,162,75,0.08);
     padding:12px 16px;margin-bottom:20px;
   }
-  /* .ro-hide has NO static CSS rule — elements are only hidden via
-     JS (element.style.display="none") when an actual ?share= link is
-     open. Without this comment/fix, a blanket "display:none" class
-     rule here would hide these controls in NORMAL mode too. */
 
   /* Equity curve */
   .equity-wrap{position:relative;}
@@ -323,6 +319,60 @@
     table{font-size:10.5px;}
     .rg-grid{grid-template-columns:1fr;}
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     FUNDAMENTALS MODULE CSS (fx- prefix)
+   ═══════════════════════════════════════════════════════════════════════════ */
+  .fx-meter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+  .fx-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);cursor:pointer;transition:border-color .15s;font-size:12px;}
+  .fx-pill:hover{border-color:var(--gold);}
+  .fx-ccy{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .fx-score{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;padding:1px 5px;border-radius:3px;}
+  .fx-score-sbull{color:#2ecc71;background:rgba(46,204,113,.15);}
+  .fx-score-bull{color:#4FAE8E;background:rgba(79,174,142,.12);}
+  .fx-score-neut{color:#9B9DA6;background:rgba(155,157,166,.1);}
+  .fx-score-bear{color:#D2694A;background:rgba(210,105,74,.12);}
+  .fx-score-sbear{color:#e74c3c;background:rgba(231,76,60,.15);}
+  .fx-risk-strip{display:flex;align-items:center;gap:8px;padding:8px 0 4px;flex-wrap:wrap;}
+  .fx-risk-btn,.fx-yield-btn,.fx-tone-btn{padding:4px 12px;border-radius:4px;font-size:11.5px;font-weight:500;border:1px solid var(--line);background:var(--panel-2);color:var(--text-dim);cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .15s;}
+  .fx-active-on{background:rgba(79,174,142,.15)!important;border-color:#4FAE8E!important;color:#4FAE8E!important;}
+  .fx-active-neut{background:rgba(155,157,166,.12)!important;border-color:#9B9DA6!important;color:var(--text)!important;}
+  .fx-active-off{background:rgba(210,105,74,.15)!important;border-color:#D2694A!important;color:#D2694A!important;}
+  .fx-sel-rising{background:rgba(79,174,142,.12)!important;border-color:#4FAE8E!important;color:#4FAE8E!important;}
+  .fx-sel-flat{background:rgba(155,157,166,.1)!important;border-color:#9B9DA6!important;color:var(--text)!important;}
+  .fx-sel-falling{background:rgba(210,105,74,.12)!important;border-color:#D2694A!important;color:#D2694A!important;}
+  .fx-sel-hawk{background:rgba(79,174,142,.12)!important;border-color:#4FAE8E!important;color:#4FAE8E!important;}
+  .fx-sel-neut2{background:rgba(155,157,166,.1)!important;border-color:#9B9DA6!important;color:var(--text)!important;}
+  .fx-sel-dove{background:rgba(210,105,74,.12)!important;border-color:#D2694A!important;color:#D2694A!important;}
+  .fx-ind-row{display:grid;grid-template-columns:1fr 88px 88px 32px;gap:5px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line-soft);}
+  .fx-ind-label{font-size:12px;color:var(--text-dim);}
+  .fx-ind-input{background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 7px;outline:none;width:100%;}
+  .fx-ind-input:focus{border-color:var(--gold);}
+  .fx-chip{width:30px;height:22px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .fx-chip-bull{color:#4FAE8E;background:rgba(79,174,142,.12);}
+  .fx-chip-bear{color:#D2694A;background:rgba(210,105,74,.12);}
+  .fx-chip-neut{color:#9B9DA6;background:rgba(155,157,166,.08);}
+  .fx-section-total{display:flex;justify-content:space-between;align-items:center;padding:7px 0 2px;margin-top:6px;border-top:1px solid var(--line);}
+  .fx-two-col{display:grid;grid-template-columns:340px 1fr;gap:16px;}
+  .fx-metal-card{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;}
+  .fx-metal-factor{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;border-bottom:1px solid var(--line-soft);}
+  .fx-pair-result{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;}
+  .fx-bias-sbull{color:#2ecc71;background:rgba(46,204,113,.1);padding:6px 10px;border-radius:4px;text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-bias-bull{color:#4FAE8E;background:rgba(79,174,142,.1);padding:6px 10px;border-radius:4px;text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-bias-neut{color:#9B9DA6;background:rgba(155,157,166,.08);padding:6px 10px;border-radius:4px;text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-bias-bear{color:#D2694A;background:rgba(210,105,74,.1);padding:6px 10px;border-radius:4px;text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-bias-sbear{color:#e74c3c;background:rgba(231,76,60,.1);padding:6px 10px;border-radius:4px;text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .fx-snap-btn{background:transparent;border:1px solid var(--gold-soft);color:var(--gold);padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer;}
+  .fx-snap-btn:hover{background:rgba(201,162,75,.1);}
+  .fx-hist-table,.fx-cal-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .fx-hist-table th,.fx-cal-table th{font-size:10px;color:var(--text-dim);padding:5px 8px;border-bottom:1px solid var(--line);background:var(--panel-2);text-align:left;font-weight:500;}
+  .fx-hist-table td,.fx-cal-table td{padding:5px 8px;border-bottom:1px solid var(--line-soft);}
+  .fx-del-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;padding:2px 5px;}
+  .fx-del-btn:hover{color:#D2694A;}
+  .fx-bull-c{color:#4FAE8E!important;}
+  .fx-bear-c{color:#D2694A!important;}
+  .fx-neut-c{color:#9B9DA6!important;}
+  @media(max-width:900px){.fx-two-col{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -366,6 +416,7 @@
     <button data-tab="history">Trade History</button>
     <button data-tab="reasons">Reason Summary</button>
     <button data-tab="calculator" class="ro-hide">Position Calculator</button>
+    <button data-tab="fundamentals">📊 Fundamentals</button>
   </nav>
 
   <div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;z-index:999;padding:14px 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .2s ease, opacity .2s ease;"></div>
@@ -723,6 +774,210 @@
     </div>
   </section>
 
+  <!-- FUNDAMENTALS PANE -->
+  <section class="tabpane" id="pane-fundamentals">
+
+    <!-- Sticky top strip -->
+    <div id="fx-top-strip" style="position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0 8px;margin-bottom:16px;border-bottom:1px solid var(--line);">
+      <div style="margin-bottom:6px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Currency Strength — sorted by score</div>
+        <div id="fx-meter" class="fx-meter"></div>
+      </div>
+      <div class="fx-risk-strip">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.05em;text-transform:uppercase;">Risk Env</span>
+        <button class="fx-risk-btn" id="fx-risk-on" data-risk="risk-on">Risk-ON</button>
+        <button class="fx-risk-btn fx-active-neut" id="fx-risk-neut" data-risk="neutral">Neutral</button>
+        <button class="fx-risk-btn" id="fx-risk-off" data-risk="risk-off">Risk-OFF</button>
+        <span style="margin-left:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.05em;text-transform:uppercase;">10Y Yield</span>
+        <button class="fx-yield-btn" id="fx-yield-rising" data-yield="Rising">Rising</button>
+        <button class="fx-yield-btn fx-sel-flat" id="fx-yield-flat" data-yield="Flat">Flat</button>
+        <button class="fx-yield-btn" id="fx-yield-falling" data-yield="Falling">Falling</button>
+      </div>
+    </div>
+
+    <!-- 2-column layout -->
+    <div class="fx-two-col">
+
+      <!-- LEFT: Currency Editor -->
+      <div>
+        <select id="fx-ccy-select" style="width:100%;margin-bottom:12px;background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:8px 10px;outline:none;">
+          <option value="USD">USD — US Dollar</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="JPY">JPY — Japanese Yen</option>
+          <option value="CHF">CHF — Swiss Franc</option>
+          <option value="AUD">AUD — Australian Dollar</option>
+          <option value="CAD">CAD — Canadian Dollar</option>
+          <option value="NZD">NZD — New Zealand Dollar</option>
+        </select>
+
+        <!-- A: Economic Health -->
+        <div class="subcard">
+          <div class="subcard-title" style="cursor:pointer;user-select:none;" data-fxtoggle="fx-body-econ">
+            A — Economic Health
+            <span id="fx-hd-econ" style="float:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;"></span>
+          </div>
+          <div id="fx-body-econ">
+            <div class="fx-ind-row" style="padding-bottom:4px;margin-bottom:2px;">
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;">INDICATOR</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">PREV</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">ACTUAL</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">±</span>
+            </div>
+            <div id="fx-econ-rows"></div>
+            <div class="fx-section-total">
+              <span style="font-size:11px;font-weight:600;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;">Section Total</span>
+              <span id="fx-total-econ" style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- B: Job Market -->
+        <div class="subcard">
+          <div class="subcard-title" style="cursor:pointer;user-select:none;" data-fxtoggle="fx-body-job">
+            B — Job Market
+            <span id="fx-hd-job" style="float:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;"></span>
+          </div>
+          <div id="fx-body-job">
+            <div class="fx-ind-row" style="padding-bottom:4px;margin-bottom:2px;">
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;">INDICATOR</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">PREV</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">ACTUAL</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">±</span>
+            </div>
+            <div id="fx-job-rows"></div>
+            <div class="fx-section-total">
+              <span style="font-size:11px;font-weight:600;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;">Section Total</span>
+              <span id="fx-total-job" style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- C: Inflation & CB -->
+        <div class="subcard">
+          <div class="subcard-title" style="cursor:pointer;user-select:none;" data-fxtoggle="fx-body-inf">
+            C — Inflation &amp; Central Bank
+            <span id="fx-hd-inf" style="float:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;"></span>
+          </div>
+          <div id="fx-body-inf">
+            <div class="fx-ind-row" style="padding-bottom:4px;margin-bottom:2px;">
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;">INDICATOR</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">PREV</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">ACTUAL</span>
+              <span style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;text-align:center;">±</span>
+            </div>
+            <div id="fx-inf-rows"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px;margin-top:4px;border-top:1px solid var(--line-soft);">
+              <span style="font-size:12px;color:var(--text-dim);">CB Tone</span>
+              <div style="display:flex;gap:4px;">
+                <button class="fx-tone-btn" id="fx-tone-hawk" data-tone="hawkish">Hawkish</button>
+                <button class="fx-tone-btn fx-sel-neut2" id="fx-tone-neut" data-tone="neutral">Neutral</button>
+                <button class="fx-tone-btn" id="fx-tone-dove" data-tone="dovish">Dovish</button>
+              </div>
+            </div>
+            <div class="fx-section-total">
+              <span style="font-size:11px;font-weight:600;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;">Section Total (incl. CB Tone)</span>
+              <span id="fx-total-inf" style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- D: COT -->
+        <div class="subcard">
+          <div class="subcard-title" style="cursor:pointer;user-select:none;" data-fxtoggle="fx-body-cot">D — COT (Confirmation Only)</div>
+          <div id="fx-body-cot">
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:6px 0;">
+              <span style="font-size:12px;color:var(--text-dim);">Institutional Bias</span>
+              <select id="fx-cot-bias" style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 8px;outline:none;">
+                <option value="neutral">Neutral</option>
+                <option value="long">Long (Bullish)</option>
+                <option value="short">Short (Bearish)</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer;">
+                <input type="checkbox" id="fx-cot-crowded" style="accent-color:var(--gold);"/> Crowded
+              </label>
+            </div>
+            <div id="fx-cot-signal" style="margin-top:8px;font-size:12px;color:var(--text-dim);padding:6px 8px;background:var(--panel);border:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">Save data to see COT signal.</div>
+          </div>
+        </div>
+
+        <!-- Total Score -->
+        <div class="subcard" style="border-color:rgba(201,162,75,.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">Total Fundamental Score</div>
+              <div style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;">Econ + Job + Inflation + Risk</div>
+            </div>
+            <span id="fx-total-all" style="font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;color:var(--text);">0</span>
+          </div>
+          <div id="fx-total-bias" style="margin-top:10px;" class="fx-bias-neut">Neutral / No Trade</div>
+        </div>
+
+        <button class="btn ro-hide" id="fx-save-btn" style="width:100%;margin-top:12px;">Save Currency Data</button>
+      </div>
+
+      <!-- RIGHT column -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Gold & Silver -->
+        <div class="panel" style="margin-bottom:0;">
+          <h3 style="font-size:13px;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;">Gold &amp; Silver</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="fx-metals-grid"></div>
+        </div>
+
+        <!-- Pair Calculator -->
+        <div class="panel" style="margin-bottom:0;">
+          <h3 style="font-size:13px;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;">Pair Bias Calculator</h3>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:12px;">
+            <select id="fx-pair-base" style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:7px 8px;outline:none;">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option>
+              <option>CHF</option><option>AUD</option><option>CAD</option><option>NZD</option>
+              <option>XAU</option><option>XAG</option>
+            </select>
+            <span style="font-size:12px;color:var(--text-dim);text-align:center;font-weight:600;">/</span>
+            <select id="fx-pair-quote" style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:7px 8px;outline:none;">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option>
+              <option>CHF</option><option>AUD</option><option>CAD</option><option>NZD</option>
+              <option>XAU</option><option>XAG</option>
+            </select>
+          </div>
+          <div id="fx-pair-result"></div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="subcard-title" style="cursor:pointer;margin-bottom:8px;" data-fxtoggle="fx-body-calendar">Economic Calendar ▾</div>
+          <div id="fx-body-calendar">
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">ForexFactory say text copy-paste karen (Ctrl+A → Ctrl+C → yahan paste):</div>
+            <textarea id="fx-cal-textarea" style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:8px 10px;resize:vertical;min-height:90px;outline:none;transition:border-color .15s;" placeholder="ForexFactory calendar text yahan paste karen..."></textarea>
+            <button class="btn secondary" id="fx-cal-parse-btn" style="margin-top:6px;width:100%;">Parse &amp; Preview</button>
+            <div id="fx-cal-range" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);padding:5px 0;"></div>
+            <div id="fx-cal-preview" style="overflow-x:auto;margin-top:6px;"></div>
+            <button class="btn ro-hide" id="fx-cal-import-btn" style="display:none;margin-top:8px;width:100%;">Import Events</button>
+          </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="subcard-title" style="cursor:pointer;margin-bottom:8px;" data-fxtoggle="fx-body-upcoming">Upcoming Events ▾</div>
+          <div id="fx-body-upcoming"><div id="fx-upcoming-list"></div></div>
+        </div>
+
+        <!-- History -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="subcard-title" style="cursor:pointer;margin-bottom:8px;" data-fxtoggle="fx-body-history">History &amp; Trend ▾</div>
+          <div id="fx-body-history">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+              <button class="fx-snap-btn ro-hide" id="fx-snap-btn">Save Snapshot</button>
+            </div>
+            <div id="fx-history-wrap"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <footer>My Trading OS · data synced live via Firebase</footer>
 </div>
 
@@ -770,12 +1025,7 @@ const REASONS = ["SBT 1","SBT 2","SBT 3","SBT 4","SBT 5","SBT 6","SBT 7","SBT 8"
   "Fib 23%","Fib 38%","Fib 50%","Fib 61%","Fib 71%","Bullish BB","Bearish BB","QML","Double Top","Double Bottom","Gautam Trick"];
 const MISTAKES = ["Directional 123, Not MSS","Zone Break","1 Candle Close","General Demand","General Supply",
   "Early Entry","Moved SL","SL Positioning Wrong","Structure Wrong Mark","Confusing the Structure","Confusing the Model","Gautam Trick"];
-/* Metals/oil/crypto have a verified, near-universal broker-standard contract
-   size. Forex is fully restored below — crosses that don't quote directly in
-   USD now use an explicit, user-supplied "Conversion Rate" (see
-   crossConversionInfo() + the Add Trade / Calculator conversion-rate field)
-   instead of any approximation, so every pair here is 100% accurate as long
-   as that rate is filled in. */
+
 const INSTRUMENTS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
   "EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD",
@@ -787,11 +1037,6 @@ const INSTRUMENTS = [
 ];
 const VERIFIED_INSTRUMENTS = new Set(INSTRUMENTS);
 
-/* For a cross pair (quote currency isn't USD, and USD isn't the base either),
-   tell the caller which real-world reference pair supplies the USD
-   conversion rate, and whether to multiply or divide by it. USDJPY/USDCHF/
-   USDCAD (base === USD) need no separate rate — their own exit price already
-   IS the needed rate, same as before. */
 function crossConversionInfo(sym){
   const quote = sym.slice(-3), base = sym.slice(0,3);
   if (quote === "USD" || base === "USD") return null;
@@ -806,9 +1051,6 @@ function crossConversionInfo(sym){
   return map[quote] || null;
 }
 
-/* Best-effort live rate fetch (free, no API key). Never blocks anything —
-   if it fails (offline, API down, CORS hiccup) the caller just leaves the
-   field empty for manual entry. */
 async function fetchConversionRate(refPair){
   try{
     const base = refPair.slice(0,3), quote = refPair.slice(3,6);
@@ -824,36 +1066,19 @@ async function fetchConversionRate(refPair){
   }
 }
 
-/* ---------------- Calculation logic (mirrors the Excel formulas) ----------------
-   Every instrument offered in INSTRUMENTS (see above) has been cross-checked
-   against multiple real broker contract specifications (Sept 2026 research) —
-   pip size, contract size, and the USD-conversion path are all verified.
-   Indices, natural gas, DXY, and non-BTC crypto were deliberately left OUT —
-   their contract size genuinely varies broker-to-broker with no single
-   correct default. If you need one of those, share your broker's exact
-   symbol specification (Contract Size + tick size) and it can be added.
-
-   Metals pip size note: generic web research initially suggested 0.01 as
-   the "standard" XAUUSD pip, but the user's own real pip-counting habit
-   (confirmed against two independent TradingView measurements — a 76.69
-   move counted as 766 pips, and a 14.59 move as 145 pips) consistently
-   matches 0.1, not 0.01. That's what's used below. This only changes the
-   "Pips" display label and the Position Calculator's pips-mode input — the
-   actual dollar profit/loss math never used pipSize and was independently
-   verified to the cent against the user's real MT5 trade history either way. */
 function pipSize(sym){
-  if(sym.slice(-3)==="JPY") return 0.01;                                  // JPY pairs: verified standard
-  if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.1;     // metals: matches user's own confirmed pip convention (verified against 2 real TradingView examples)
-  if(sym==="USOIL"||sym==="UKOIL") return 0.01;                          // oil: verified standard
-  if(sym==="BTCUSDT") return 1;                                          // crypto: verified standard (1 lot = 1 coin)
-  return 0.0001;                                                         // forex majors/crosses: verified standard
+  if(sym.slice(-3)==="JPY") return 0.01;
+  if(["XAUUSD","XAGUSD","XPTUSD","XPDUSD"].includes(sym)) return 0.1;
+  if(sym==="USOIL"||sym==="UKOIL") return 0.01;
+  if(sym==="BTCUSDT") return 1;
+  return 0.0001;
 }
 function contractSize(sym){
-  if(sym==="XAUUSD"||sym==="XPTUSD"||sym==="XPDUSD") return 100;   // metals: verified standard, 100 oz/lot
-  if(sym==="XAGUSD") return 5000;                                 // silver: verified standard, 5000 oz/lot
-  if(sym==="USOIL"||sym==="UKOIL") return 1000;                   // oil: verified standard, 1000 barrels/lot
-  if(sym==="BTCUSDT") return 1;                                   // crypto: verified standard, 1 lot = 1 coin
-  return 100000;                                                  // forex majors/crosses: verified standard, 100,000 units/lot
+  if(sym==="XAUUSD"||sym==="XPTUSD"||sym==="XPDUSD") return 100;
+  if(sym==="XAGUSD") return 5000;
+  if(sym==="USOIL"||sym==="UKOIL") return 1000;
+  if(sym==="BTCUSDT") return 1;
+  return 100000;
 }
 function calcTrade(t){
   const sym = t.instrument;
@@ -872,7 +1097,7 @@ function calcTrade(t){
   } else if (crossInfo && t.convRate && t.convRate > 0) {
     usdconv = crossInfo.mode === "multiply" ? t.convRate : 1 / t.convRate;
   } else {
-    usdconv = 1; // no rate supplied — last-resort fallback, flagged in the UI
+    usdconv = 1;
   }
   const gross = profit * usdconv;
   const net = gross - (t.commission||0) - (t.swap||0);
@@ -887,7 +1112,6 @@ function fmtMoney(n){
   return sign + "$" + Math.abs(n).toFixed(2);
 }
 
-/* ---------------- Toast notifications (clear success/error feedback) ---------------- */
 let toastTimer = null;
 function showToast(message, type){
   const el = document.getElementById("toast");
@@ -908,8 +1132,6 @@ function showToast(message, type){
   }, 3500);
 }
 
-/* Rejects if the given promise doesn't settle within `ms` milliseconds,
-   so the UI never gets stuck showing "Saving..." forever. */
 function withTimeout(promise, ms, label){
   return Promise.race([
     promise,
@@ -917,7 +1139,6 @@ function withTimeout(promise, ms, label){
   ]);
 }
 
-/* ---------------- Searchable dropdown component ---------------- */
 function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
@@ -953,10 +1174,6 @@ function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
     list.classList.remove("show");
     input.dispatchEvent(new Event("input", { bubbles: true }));
     if(onSelect) onSelect(val);
-    // Auto-advance: jump straight to the next field once something is
-    // actually picked, so a quick type→arrow→Enter flow never needs the mouse.
-    // nextFieldId can be a fixed id, or a function returning one dynamically
-    // (useful when which field comes next depends on what was just picked).
     const resolvedNext = typeof nextFieldId === "function" ? nextFieldId(val) : nextFieldId;
     if (resolvedNext){
       const nextEl = document.getElementById(resolvedNext);
@@ -983,8 +1200,6 @@ function makeSearchable(inputId, listId, options, onSelect, nextFieldId){
       highlightIndex = (highlightIndex - 1 + currentMatches.length) % currentMatches.length;
       renderHighlight();
     } else if (e.key === "Enter"){
-      // If the user hasn't arrowed to a specific option yet, Enter picks the
-      // top match — otherwise it picks whichever one is highlighted.
       e.preventDefault();
       const pick = highlightIndex >= 0 ? currentMatches[highlightIndex] : currentMatches[0];
       if (pick) selectValue(pick);
@@ -1004,7 +1219,6 @@ makeSearchable("f-instrument","dd-instrument",INSTRUMENTS,null,"f-entry");
 makeSearchable("f-reason","dd-reason",REASONS,null,"f-rules");
 makeSearchable("f-mistake","dd-mistake",MISTAKES);
 
-/* ---------------- Direction toggle ---------------- */
 let selectedDir = "";
 document.querySelectorAll(".dir-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
@@ -1015,7 +1229,6 @@ document.querySelectorAll(".dir-btn").forEach(btn=>{
   });
 });
 
-/* ---------------- Trade quality grade toggle (optional, click again to clear) ---------------- */
 let selectedGrade = "";
 document.querySelectorAll(".grade-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
@@ -1030,7 +1243,6 @@ document.querySelectorAll(".grade-btn").forEach(btn=>{
   });
 });
 
-/* ---------------- Live P&L preview while filling the form ---------------- */
 function updateLivePreview(){
   const box = document.getElementById("livePreview");
   const instrument = document.getElementById("f-instrument").value.trim().toUpperCase();
@@ -1069,7 +1281,6 @@ function updateLivePreview(){
   document.getElementById(id).addEventListener("input", updateLivePreview);
 });
 
-/* ---------------- Conversion-rate field (Add Trade form) ---------------- */
 let lastConvRateInstrument = null;
 document.getElementById("f-instrument").addEventListener("input", ()=>{
   const instrument = document.getElementById("f-instrument").value.trim().toUpperCase();
@@ -1092,7 +1303,7 @@ document.getElementById("f-instrument").addEventListener("input", ()=>{
     input.value = "";
     status.textContent = "Fetching current " + info.pair + " rate…";
     fetchConversionRate(info.pair).then(rate=>{
-      if (lastConvRateInstrument !== instrument) return; // instrument changed again while fetching
+      if (lastConvRateInstrument !== instrument) return;
       if (rate){
         input.value = rate;
         status.textContent = `Auto-filled from live ${info.pair} rate — edit if you know the exact rate at your trade's time.`;
@@ -1104,30 +1315,29 @@ document.getElementById("f-instrument").addEventListener("input", ()=>{
   }
 });
 
-/* ---------------- Tabs ---------------- */
 document.querySelectorAll("nav.tabs button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
     document.querySelectorAll(".tabpane").forEach(p=>{ p.classList.remove("active"); p.classList.remove("in"); });
     btn.classList.add("active");
     const pane = document.getElementById("pane-"+btn.dataset.tab);
-    pane.classList.add("active");
-    requestAnimationFrame(()=> requestAnimationFrame(()=> pane.classList.add("in")));
+    if(pane){
+      pane.classList.add("active");
+      requestAnimationFrame(()=> requestAnimationFrame(()=> pane.classList.add("in")));
+    }
   });
 });
 
-/* ---------------- State ---------------- */
-let trades = [];             // live array from Firestore, for the ACTIVE strategy only
-let startingBalance = null;  // null = not set yet for this strategy
-let dailyLossLimit = null;   // USD, null = not set
-let monthlyTargetPct = null; // %, null = not set
+let trades = [];
+let startingBalance = null;
+let dailyLossLimit = null;
+let monthlyTargetPct = null;
 let editingId = null;
-let strategies = [];         // all strategy sheets: {id,name,startingBalance,order,createdAt}
+let strategies = [];
 let currentStrategyId = null;
-let tradesUnsub = null;      // detach fn for the previous strategy's trades listener
-let appReady = false;        // true once a real active sheet has loaded — guards buttons against the brief empty-first-snapshot window
+let tradesUnsub = null;
+let appReady = false;
 
-/* ---------------- Read-only shared-link mode ---------------- */
 const urlParams = new URLSearchParams(location.search);
 const shareStrategyId = urlParams.get("share");
 const readOnlyMode = !!shareStrategyId;
@@ -1136,7 +1346,6 @@ if (readOnlyMode){
   document.querySelectorAll(".ro-hide").forEach(el => el.style.display = "none");
 }
 
-/* ---------------- One-time migration: legacy single-sheet data -> "Main" sheet ---------------- */
 async function ensureStrategiesExist(){
   const existing = await getDocs(strategiesCol);
   if (!existing.empty) return;
@@ -1162,7 +1371,6 @@ async function ensureStrategiesExist(){
   await setDoc(appStateRef, { activeStrategyId: newStrategyRef.id }, { merge: true });
 }
 
-/* ---------------- Strategy switcher ---------------- */
 function renderStrategySwitcher(){
   const sel = document.getElementById("strategySelect");
   if (!strategies.length){
@@ -1173,10 +1381,7 @@ function renderStrategySwitcher(){
   if (currentStrategyId) sel.value = currentStrategyId;
 }
 
-/* ---------------- Sheet PIN lock (soft privacy lock, not real security —
-   see conversation notes: it only gates the app's own UI; Firestore itself
-   is still readable by anyone with the project config, since rules are open) --------------- */
-let unlockedSheets = new Set(); // in-memory only — resets on every page reload, per user's request
+let unlockedSheets = new Set();
 let pendingUnlockId = null;
 
 async function hashPin(pin){
@@ -1194,7 +1399,7 @@ function switchStrategy(id){
     document.getElementById("pinPromptInput").value = "";
     document.getElementById("pinPromptError").textContent = "";
     showModal("pinPromptOverlay");
-    renderStrategySwitcher(); // keep the dropdown showing the still-active sheet, not the locked one
+    renderStrategySwitcher();
     setTimeout(()=> document.getElementById("pinPromptInput").focus(), 50);
     return;
   }
@@ -1226,7 +1431,6 @@ document.getElementById("pinPromptInput").addEventListener("keydown", (e)=>{
   if (e.key === "Enter") document.getElementById("pinPromptUnlock").click();
 });
 
-/* ---------------- Show/hide PIN toggle (eye icon) ---------------- */
 function wirePinEye(inputId, btnId){
   const input = document.getElementById(inputId);
   const btn = document.getElementById(btnId);
@@ -1274,7 +1478,6 @@ function maybePromptStartingBalance(){
   }
 }
 
-/* ---------------- Read-only shared-link view ---------------- */
 async function initReadOnly(){
   const sel = document.getElementById("strategySelect");
   sel.innerHTML = `<option value="${shareStrategyId}">Loading…</option>`;
@@ -1365,18 +1568,11 @@ document.getElementById("deleteStrategyBtn").addEventListener("click", async ()=
     snap.forEach(d => batch.delete(d.ref));
     await withTimeout(batch.commit(), 20000, "Deleting sheet's trades");
     await deleteDoc(doc(db, "strategies", cur.id));
-    currentStrategyId = null; // strategiesCol listener will pick a new active sheet
+    currentStrategyId = null;
     showToast("✓ Sheet deleted", "success");
   } catch(err){ showToast("✗ " + err.message, "error"); }
 });
 
-/* ---------------- Combined "sheet setup" modal: name + starting balance together ----------------
-   'create' -> blank fields, makes a brand-new sheet (name required, balance optional).
-   'edit'   -> pre-filled with the active sheet's current name + balance; used both for the
-               pencil icon on the Starting Balance card AND the rename icon next to the sheet
-               dropdown, and it's what auto-opens the first time a sheet has no balance set yet.
-   Either way, once saved both fields disappear again until the icon is clicked next time. */
-/* ---------------- Modal show/hide with smooth transition ---------------- */
 function showModal(id){
   const el = document.getElementById(id);
   el.style.display = "flex";
@@ -1448,7 +1644,6 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
 
   hideModal("sheetModalOverlay");
 
-  // undefined = "leave whatever PIN already exists untouched" (edit mode, field left blank)
   let pinHash;
   if (pinRaw !== ""){
     pinHash = await hashPin(pinRaw);
@@ -1460,8 +1655,7 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
     try{
       const docData = { name, startingBalance: bal, order: newOrder, createdAt, pinHash: pinHash || null };
       const ref = await addDoc(strategiesCol, docData);
-      if (pinHash) unlockedSheets.add(ref.id); // whoever just set the PIN doesn't need to re-enter it immediately
-      // optimistic — don't wait for the strategies onSnapshot to refire before switching to it
+      if (pinHash) unlockedSheets.add(ref.id);
       if (!strategies.find(s => s.id === ref.id)){
         strategies.push({ id: ref.id, ...docData });
       }
@@ -1470,10 +1664,10 @@ document.getElementById("sheetModalSave").addEventListener("click", async ()=>{
     } catch(err){ showToast("✗ " + err.message, "error"); }
   } else {
     if (!currentStrategyId){ showToast("⏳ Still loading — please wait a moment and try again.", "error"); return; }
-    startingBalance = bal; // optimistic — instant dashboard update
+    startingBalance = bal;
     const curEntry = strategies.find(s => s.id === currentStrategyId);
     if (curEntry){
-      curEntry.name = name; // optimistic — instant dropdown update
+      curEntry.name = name;
       if (pinHash !== undefined) curEntry.pinHash = pinHash;
     }
     renderDashboard();
@@ -1504,7 +1698,6 @@ document.getElementById("resetAllBtn").addEventListener("click", async ()=>{
   }
 });
 
-/* ---------------- Risk & goal settings modal ---------------- */
 document.getElementById("editRiskGoalsBtn").addEventListener("click", ()=>{
   if (readOnlyMode) return;
   if (!appReady){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
@@ -1526,7 +1719,7 @@ document.getElementById("riskModalSave").addEventListener("click", async ()=>{
   if (tRaw !== "" && isNaN(tgt)){ showToast("✗ Please enter a valid target %.", "error"); return; }
 
   hideModal("riskModalOverlay");
-  dailyLossLimit = dl; monthlyTargetPct = tgt; // optimistic
+  dailyLossLimit = dl; monthlyTargetPct = tgt;
   renderRiskGoals();
   showToast("✓ Risk & goal settings saved", "success");
   try{
@@ -1581,7 +1774,6 @@ function renderRiskGoals(){
   }
 }
 
-/* ---------------- Equity curve (dependency-free inline SVG) ---------------- */
 function renderEquityCurve(){
   const svg = document.getElementById("equitySvg");
   const emptyEl = document.getElementById("equityEmpty");
@@ -1634,8 +1826,6 @@ function renderEquityCurve(){
   `;
 }
 
-/* ---------------- Mistake analytics ---------------- */
-/* ---------------- Trade quality by grade ---------------- */
 function renderGradeAnalytics(){
   const list = document.getElementById("gradeList");
   const emptyEl = document.getElementById("gradeEmpty");
@@ -1697,7 +1887,7 @@ function renderMistakeAnalytics(){
     const net = mTrades.reduce((s,t)=>s+calcTrade(t).net, 0);
     const losses = mTrades.filter(t=>calcTrade(t).result==="Loss").length;
     return { mistake: m, total: mTrades.length, losses, net: round2(net) };
-  }).sort((a,b) => a.net - b.net); // costliest mistake first
+  }).sort((a,b) => a.net - b.net);
 
   const maxAbs = Math.max(1, ...stats.map(s=>Math.abs(s.net)));
   list.innerHTML = stats.map(s=>{
@@ -1716,14 +1906,12 @@ function renderMistakeAnalytics(){
   }).join("");
 }
 
-/* ---------------- Position size calculator (standalone tab) ---------------- */
 makeSearchable("calc-instrument", "dd-calc-instrument", INSTRUMENTS, updateCalcMode,
   (val) => calcModeNeedsEntry(val.toUpperCase()) ? "calc-entry" : "calc-sl-pips");
-document.getElementById("calc-slprice-field").style.display = "none"; // default: pips mode
+document.getElementById("calc-slprice-field").style.display = "none";
 document.getElementById("calc-entry-field").style.display = "none";
 
 document.querySelector('nav.tabs button[data-tab="calculator"]').addEventListener("click", ()=>{
-  // Pre-fill balance with the live current balance each time the tab is opened
   const sb = (startingBalance ?? 0) + trades.reduce((s,t)=>s+calcTrade(t).net, 0);
   document.getElementById("calc-balance").value = round2(sb);
   updateCalcMode();
@@ -1734,9 +1922,6 @@ document.querySelector('nav.tabs button[data-tab="calculator"]').addEventListene
 });
 document.getElementById("calc-instrument").addEventListener("input", updateCalcMode);
 
-/* Pairs where USD is the base currency (USDJPY, USDCAD...) or the quote is JPY
-   need a live price to convert P&L into USD — for every other instrument
-   (XAUUSD, EURUSD, indices, crypto...) only Pips + Instrument are needed. */
 function calcModeNeedsEntry(instrument){
   const quote = instrument.slice(-3);
   return !!instrument && quote !== "USD";
@@ -1849,21 +2034,12 @@ function computeSuggestedLot(){
     return;
   }
 
-  // Always ROUND DOWN (floor) to the broker's 0.01 lot step — this guarantees
-  // the real risk taken is never more than what you asked for, only ever
-  // slightly less. Rounding to the nearest 0.01 instead could push the real
-  // risk above your intended %, which is the wrong direction for risk control.
   const flooredLot = Math.floor(rawLot*100)/100;
   suggestedLot = Math.max(0.01, flooredLot);
 
-  // The actual $ risk at this exact lot size (after rounding) — this can
-  // differ slightly from riskAmount above once the lot is rounded to a real
-  // tradable size, so always show the true number rather than the theoretical one.
   const actualRisk = suggestedLot * priceDistance * contract * usdconv;
 
   if (flooredLot < 0.01){
-    // The ideal lot was smaller than any broker allows (min 0.01) — using the
-    // minimum means the real risk taken is HIGHER than what was asked for.
     resultEl.innerHTML = `Suggested lot size: ${suggestedLot} lots<br>` +
       `<span style="color:var(--loss);font-size:14px;">⚠ Your ideal lot (${rawLot.toFixed(4)}) is below the broker's 0.01 minimum — ` +
       `using 0.01 means you'll actually risk $${round2(actualRisk).toFixed(2)}, not the $${round2(riskAmount).toFixed(2)} you asked for.</span>`;
@@ -1872,7 +2048,6 @@ function computeSuggestedLot(){
   }
 }
 
-/* ---------------- Export CSV (respects current Trade History filter) ---------------- */
 document.getElementById("exportCsvBtn").addEventListener("click", ()=>{
   const y = document.getElementById("filterYear").value;
   const m = document.getElementById("filterMonth").value;
@@ -1908,7 +2083,6 @@ document.getElementById("exportCsvBtn").addEventListener("click", ()=>{
   showToast("✓ CSV downloaded", "success");
 });
 
-/* ---------------- Share (read-only link) ---------------- */
 document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>{
   if (!currentStrategyId){ showToast("⏳ Still loading — please wait a moment.", "error"); return; }
   const url = `${location.origin}${location.pathname}?share=${currentStrategyId}`;
@@ -1920,7 +2094,6 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
   }
 });
 
-/* ---------------- Dark / light theme toggle ---------------- */
 (function initTheme(){
   const btn = document.getElementById("themeToggleBtn");
   function apply(theme){
@@ -1938,7 +2111,6 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
   });
 })();
 
-/* ---------------- Font picker ---------------- */
 (function initFontPicker(){
   const sel = document.getElementById("fontPickerBtn");
   const FONTS = {
@@ -1962,7 +2134,6 @@ document.getElementById("shareStrategyBtn").addEventListener("click", async ()=>
   });
 })();
 
-/* ---------------- Card 3D tilt-on-hover (dashboard summary cards only) ---------------- */
 document.querySelectorAll(".cards .card").forEach(card=>{
   card.addEventListener("mousemove", e=>{
     const r = card.getBoundingClientRect();
@@ -1977,7 +2148,6 @@ document.querySelectorAll(".cards .card").forEach(card=>{
 
 initApp();
 
-/* ---------------- Add / Update trade ---------------- */
 document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   if (readOnlyMode) return;
   const msg = document.getElementById("formMsg");
@@ -2020,11 +2190,6 @@ document.getElementById("submitTradeBtn").addEventListener("click", async ()=>{
   const editId = editingId;
   const strategyIdAtSubmit = currentStrategyId;
 
-  /* Optimistic UI: Firestore's local cache already reflects this write
-     instantly (via onSnapshot) regardless of network round-trip time, so we
-     don't make the user wait on a round-trip before confirming success.
-     A real failure (offline write rejected, permission error, etc.) still
-     surfaces its own error toast below — this never silently swallows one. */
   resetForm();
   if (wasEditing){
     editingId = null;
@@ -2109,7 +2274,7 @@ function startEdit(t){
 async function deleteTrade(id){
   if (readOnlyMode) return;
   if (!confirm("Delete this trade? This cannot be undone.")) return;
-  trades = trades.filter(t => t.id !== id); // optimistic — instant table update
+  trades = trades.filter(t => t.id !== id);
   renderAll();
   try{
     await deleteDoc(tradeDocRef(id));
@@ -2118,7 +2283,6 @@ async function deleteTrade(id){
   }
 }
 
-/* ---------------- Render: Dashboard ---------------- */
 function renderDashboard(){
   const total = trades.length;
   const wins = trades.filter(t => calcTrade(t).result === "Win").length;
@@ -2137,7 +2301,6 @@ function renderDashboard(){
   document.getElementById("d-balance").textContent = "$" + round2(balance).toFixed(2);
 }
 
-/* ---------------- Render: History with filters ---------------- */
 function populateFilterOptions(){
   const years = new Set(), months = new Set(), days = new Set();
   trades.forEach(t=>{
@@ -2223,7 +2386,6 @@ function renderHistory(){
     : "No trades match this filter.";
 }
 
-/* ---------------- Render: Reason Summary ---------------- */
 function renderReasons(){
   const stats = REASONS.map(r=>{
     const rTrades = trades.filter(t => t.reason === r);
@@ -2252,7 +2414,6 @@ function renderReasons(){
   }).join("");
 }
 
-/* ---------------- Monthly report (auto-generated) ---------------- */
 document.getElementById("monthlyReportSelect").addEventListener("change", renderMonthlyReport);
 function renderMonthlyReport(){
   const sel = document.getElementById("monthlyReportSelect");
@@ -2309,6 +2470,427 @@ function renderAll(){
   renderMistakeAnalytics();
   renderMonthlyReport();
 }
+
+/* ═══════════════════════════════════════════════════════════
+   FUNDAMENTALS MODULE
+═══════════════════════════════════════════════════════════ */
+
+const FX_CURRENCIES=['USD','EUR','GBP','JPY','CHF','AUD','CAD','NZD'];
+const FX_SAFE_HAVEN=['USD','JPY','CHF'];
+const FX_RISK_CCY=['AUD','NZD','CAD'];
+const FX_METALS=['XAU','XAG'];
+
+const FX_ECON_ITEMS=[
+  {key:'gdp',label:'GDP',inverse:false},
+  {key:'mpmi',label:'Manufacturing PMI',inverse:false},
+  {key:'spmi',label:'Services PMI',inverse:false},
+  {key:'retail',label:'Retail Sales',inverse:false},
+  {key:'confidence',label:'Consumer Confidence',inverse:false},
+];
+const FX_JOB_ITEMS=[
+  {key:'nfp',label:'Non-Farm Payroll',inverse:false},
+  {key:'unemployment',label:'Unemployment Rate',inverse:true},
+  {key:'claims',label:'Jobless Claims',inverse:true},
+  {key:'adp',label:'ADP Employment',inverse:false},
+  {key:'jolts',label:'JOLTS Job Openings',inverse:false},
+];
+const FX_INFLATION_ITEMS=[
+  {key:'cpi',label:'CPI',inverse:false},
+  {key:'ppi',label:'PPI',inverse:false},
+  {key:'pce',label:'PCE',inverse:false},
+  {key:'rate',label:'Interest Rate',inverse:false},
+];
+const FX_BIAS_BANDS=[
+  {min:4,max:Infinity,label:'Strong Bullish',cls:'fx-bias-sbull'},
+  {min:2,max:3,label:'Bullish',cls:'fx-bias-bull'},
+  {min:-1,max:1,label:'Neutral / No Trade',cls:'fx-bias-neut'},
+  {min:-3,max:-2,label:'Bearish',cls:'fx-bias-bear'},
+  {min:-Infinity,max:-4,label:'Strong Bearish',cls:'fx-bias-sbear'},
+];
+
+let fxData={riskEnvironment:'neutral',yieldTrend:'Flat'};
+let fxCurrentTone='neutral';
+let fxCalParsed=[];
+let fxEventsList=[];
+let fxHistoryList=[];
+
+const fxFundRef=doc(db,'meta','fxFundamentals');
+const fxEventsCol=collection(db,'fxEvents');
+const fxHistoryCol=collection(db,'fxHistory');
+
+function fxItemScore(prev,actual,inverse=false){
+  const p=parseFloat(prev),a=parseFloat(actual);
+  if(isNaN(p)||isNaN(a))return 0;
+  let s=a>p?1:a<p?-1:0;
+  return inverse?-s:s;
+}
+function fxSectionTotal(items,dataObj){
+  let t=0;
+  for(const item of items){const d=(dataObj&&dataObj[item.key])||{};t+=fxItemScore(d.prev,d.actual,item.inverse);}
+  return t;
+}
+function fxToneScore(t){if(t==='hawkish')return 1;if(t==='dovish')return -1;return 0;}
+function fxRiskScore(ccy,env){
+  if(env==='risk-off'){if(FX_SAFE_HAVEN.includes(ccy))return 1;if(FX_RISK_CCY.includes(ccy))return -1;}
+  if(env==='risk-on'){if(FX_SAFE_HAVEN.includes(ccy))return -1;if(FX_RISK_CCY.includes(ccy))return 1;}
+  return 0;
+}
+function fxCurrencyBreakdown(ccy,data){
+  const d=(data&&data[ccy])||{};const env=(data&&data.riskEnvironment)||'neutral';
+  const eS=fxSectionTotal(FX_ECON_ITEMS,d.econ||{});
+  const jS=fxSectionTotal(FX_JOB_ITEMS,d.job||{});
+  const iS=fxSectionTotal(FX_INFLATION_ITEMS,d.inflation||{})+fxToneScore((d.inflation||{}).tone||'neutral');
+  const rS=fxRiskScore(ccy,env);
+  return{econScore:eS,jobScore:jS,infScore:iS,riskScore:rS,total:eS+jS+iS+rS,cot:d.cot||{}};
+}
+function fxMetalBreakdown(data){
+  const usd=(data&&data['USD'])||{};const env=(data&&data.riskEnvironment)||'neutral';const yld=(data&&data.yieldTrend)||'Flat';
+  const eS=-(fxSectionTotal(FX_ECON_ITEMS,usd.econ||{}));
+  const jS=-(fxSectionTotal(FX_JOB_ITEMS,usd.job||{}));
+  const iS=-(fxSectionTotal(FX_INFLATION_ITEMS,usd.inflation||{})+fxToneScore((usd.inflation||{}).tone||'neutral'));
+  const yS=yld==='Rising'?-1:yld==='Falling'?1:0;
+  const rS=env==='risk-off'?1:env==='risk-on'?-1:0;
+  return{econScore:eS,jobScore:jS,infScore:iS,yieldScore:yS,riskScore:rS,total:eS+jS+iS+yS+rS};
+}
+function fxBiasLabel(score){
+  for(const b of FX_BIAS_BANDS){if(score>=b.min&&score<=b.max)return b;}
+  return{label:'Neutral / No Trade',cls:'fx-bias-neut'};
+}
+function fxSn(v){return(v>0?'+':'')+v;}
+function fxScoreCls(s){if(s>=4)return'fx-score-sbull';if(s>=2)return'fx-score-bull';if(s<=-4)return'fx-score-sbear';if(s<=-2)return'fx-score-bear';return'fx-score-neut';}
+function fxChipCls(s){if(s>0)return'fx-chip-bull';if(s<0)return'fx-chip-bear';return'fx-chip-neut';}
+function fxColCls(s){if(s>0)return'fx-bull-c';if(s<0)return'fx-bear-c';return'fx-neut-c';}
+
+function fxRenderMeter(){
+  const el=document.getElementById('fx-meter');if(!el)return;
+  const pills=[...FX_CURRENCIES,...FX_METALS].map(c=>({c,t:FX_METALS.includes(c)?fxMetalBreakdown(fxData).total:fxCurrencyBreakdown(c,fxData).total})).sort((a,b)=>b.t-a.t);
+  el.innerHTML=pills.map(({c,t})=>{
+    const ccyStyle=c==='XAU'?'style="color:var(--gold)"':c==='XAG'?'style="color:#94a3b8"':'';
+    return `<div class="fx-pill" data-ccy="${c}"><span class="fx-ccy" ${ccyStyle}">${c}</span><span class="fx-score ${fxScoreCls(t)}">${fxSn(t)}</span></div>`;
+  }).join('');
+  el.querySelectorAll('.fx-pill').forEach(p=>{
+    p.addEventListener('click',()=>{
+      const c=p.dataset.ccy;
+      if(!FX_METALS.includes(c)){document.getElementById('fx-ccy-select').value=c;fxRenderCurrencyEditor(c);}
+      else{document.getElementById('fx-metals-grid').scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+}
+
+function fxRenderSectionRows(cid,items,secData){
+  const cont=document.getElementById(cid);if(!cont)return;
+  cont.innerHTML=items.map(item=>{
+    const d=(secData&&secData[item.key])||{};const s=fxItemScore(d.prev,d.actual,item.inverse);
+    return `<div class="fx-ind-row"><span class="fx-ind-label">${escapeHtml(item.label)}</span><input class="fx-ind-input" type="text" data-key="${item.key}" data-field="prev" value="${escapeHtml(d.prev||'')}"/><input class="fx-ind-input" type="text" data-key="${item.key}" data-field="actual" value="${escapeHtml(d.actual||'')}"/><div class="fx-chip ${fxChipCls(s)}">${fxSn(s)}</div></div>`;
+  }).join('');
+  cont.querySelectorAll('.fx-ind-input').forEach(inp=>inp.addEventListener('input',fxUpdateLiveTotals));
+}
+
+function fxRenderCurrencyEditor(ccy){
+  const d=fxData[ccy]||{};
+  fxRenderSectionRows('fx-econ-rows',FX_ECON_ITEMS,d.econ||{});
+  fxRenderSectionRows('fx-job-rows',FX_JOB_ITEMS,d.job||{});
+  fxRenderSectionRows('fx-inf-rows',FX_INFLATION_ITEMS,d.inflation||{});
+  fxCurrentTone=(d.inflation&&d.inflation.tone)||'neutral';
+  fxSetToneUI(fxCurrentTone);
+  const cb=document.getElementById('fx-cot-bias');if(cb)cb.value=(d.cot&&d.cot.bias)||'neutral';
+  const cc=document.getElementById('fx-cot-crowded');if(cc)cc.checked=!!(d.cot&&d.cot.crowded);
+  fxUpdateLiveTotals();fxRenderCOTSignal(ccy);
+}
+
+function fxSetToneUI(tone){
+  document.getElementById('fx-tone-hawk').className='fx-tone-btn'+(tone==='hawkish'?' fx-sel-hawk':'');
+  document.getElementById('fx-tone-neut').className='fx-tone-btn'+(tone==='neutral'?' fx-sel-neut2':'');
+  document.getElementById('fx-tone-dove').className='fx-tone-btn'+(tone==='dovish'?' fx-sel-dove':'');
+}
+
+function fxCalcDOM(cid,items){
+  let t=0;const cont=document.getElementById(cid);if(!cont)return 0;
+  items.forEach(item=>{const p=cont.querySelector('[data-key="'+item.key+'"][data-field="prev"]');const a=cont.querySelector('[data-key="'+item.key+'"][data-field="actual"]');if(p&&a)t+=fxItemScore(p.value,a.value,item.inverse);});
+  return t;
+}
+
+function fxUpdateLiveTotals(){
+  const eS=fxCalcDOM('fx-econ-rows',FX_ECON_ITEMS);
+  const jS=fxCalcDOM('fx-job-rows',FX_JOB_ITEMS);
+  const iS=fxCalcDOM('fx-inf-rows',FX_INFLATION_ITEMS)+fxToneScore(fxCurrentTone);
+  const ccy=document.getElementById('fx-ccy-select').value;
+  const rS=fxRiskScore(ccy,fxData.riskEnvironment||'neutral');
+  const total=eS+jS+iS+rS;
+  function setE(id,v){const el=document.getElementById(id);if(!el)return;el.textContent=fxSn(v);el.className=el.className.replace(/ fx-(bull|bear|neut)-c/g,'');el.classList.add(fxColCls(v));}
+  setE('fx-total-econ',eS);setE('fx-total-job',jS);setE('fx-total-inf',iS);setE('fx-total-all',total);
+  setE('fx-hd-econ',eS);setE('fx-hd-job',jS);setE('fx-hd-inf',iS);
+  ['fx-econ-rows','fx-job-rows','fx-inf-rows'].forEach(cid=>{
+    const items=cid==='fx-econ-rows'?FX_ECON_ITEMS:cid==='fx-job-rows'?FX_JOB_ITEMS:FX_INFLATION_ITEMS;
+    const cont=document.getElementById(cid);if(!cont)return;
+    cont.querySelectorAll('.fx-ind-row').forEach(row=>{
+      const inputs=row.querySelectorAll('.fx-ind-input');const chip=row.querySelector('.fx-chip');if(!inputs.length||!chip)return;
+      const key=inputs[0].dataset.key;const item=items.find(i=>i.key===key);
+      const s=fxItemScore(inputs[0].value,inputs[1].value,item?item.inverse:false);
+      chip.textContent=fxSn(s);chip.className='fx-chip '+fxChipCls(s);
+    });
+  });
+  const bias=fxBiasLabel(total);
+  const biasEl=document.getElementById('fx-total-bias');
+  if(biasEl){biasEl.textContent=bias.label;biasEl.className=bias.cls;}
+}
+
+function fxReadDraft(ccy){
+  function rs(cid,items){const obj={};const cont=document.getElementById(cid);if(!cont)return obj;items.forEach(item=>{const p=cont.querySelector('[data-key="'+item.key+'"][data-field="prev"]');const a=cont.querySelector('[data-key="'+item.key+'"][data-field="actual"]');obj[item.key]={prev:p?p.value:'',actual:a?a.value:''};});return obj;}
+  const econ=rs('fx-econ-rows',FX_ECON_ITEMS);
+  const job=rs('fx-job-rows',FX_JOB_ITEMS);
+  const inflation=rs('fx-inf-rows',FX_INFLATION_ITEMS);
+  inflation.tone=fxCurrentTone;
+  const cb=document.getElementById('fx-cot-bias'),cc=document.getElementById('fx-cot-crowded');
+  return{econ,job,inflation,cot:{bias:cb?cb.value:'neutral',crowded:cc?cc.checked:false},updatedAt:new Date().toISOString()};
+}
+
+async function fxSaveCurrency(){
+  if(readOnlyMode)return;
+  const ccy=document.getElementById('fx-ccy-select').value;
+  const draft=fxReadDraft(ccy);
+  const existing=fxData[ccy]||{};
+  ['econ','job','inflation'].forEach(sec=>{
+    const items=sec==='econ'?FX_ECON_ITEMS:sec==='job'?FX_JOB_ITEMS:FX_INFLATION_ITEMS;
+    items.forEach(item=>{const old=(existing[sec]&&existing[sec][item.key])||{};const nw=draft[sec][item.key];if(!nw.prev&&old.actual)nw.prev=old.actual;});
+  });
+  try{await setDoc(fxFundRef,{[ccy]:draft},{merge:true});showToast('✓ '+ccy+' data saved','success');}
+  catch(err){showToast('✗ '+err.message,'error');}
+}
+
+function fxRenderCOTSignal(ccy){
+  const el=document.getElementById('fx-cot-signal');if(!el)return;
+  const d=fxData[ccy]||{},cot=d.cot||{};
+  const {total}=fxCurrencyBreakdown(ccy,fxData);
+  const cotDir=cot.bias||'neutral';
+  const isBull=total>=2,isBear=total<=-2;
+  let msg='',col='var(--text-dim)';
+  if(cotDir==='neutral'||(!isBull&&!isBear)){msg='COT data neutral — confirmation nahi.';}
+  else if((isBull&&cotDir==='long')||(isBear&&cotDir==='short')){msg='✓ COT Confirmed — Institutions bhi '+(cotDir==='long'?'Bullish':'Bearish')+' hain.';col='var(--win)';}
+  else{msg='⚠ Warning — Institutions alag taraf ('+(cotDir==='long'?'Long':'Short')+') hain!';col='var(--loss)';}
+  if(cot.crowded)msg+=' | ⚡ Crowded — Correction risk.';
+  el.textContent=msg;el.style.color=col;
+}
+
+function fxRenderMetals(){
+  const grid=document.getElementById('fx-metals-grid');if(!grid)return;
+  const m=fxMetalBreakdown(fxData);const bias=fxBiasLabel(m.total);
+  function metalCard(name,titleStyle){
+    return '<div class="fx-metal-card"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;'+titleStyle+'">'+name+'</div>'+
+    '<div class="fx-metal-factor"><span style="color:var(--text-dim)">Econ (−USD)</span><span class="'+fxColCls(m.econScore)+'" style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;">'+fxSn(m.econScore)+'</span></div>'+
+    '<div class="fx-metal-factor"><span style="color:var(--text-dim)">Job (−USD)</span><span class="'+fxColCls(m.jobScore)+'" style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;">'+fxSn(m.jobScore)+'</span></div>'+
+    '<div class="fx-metal-factor"><span style="color:var(--text-dim)">Inflation (−USD)</span><span class="'+fxColCls(m.infScore)+'" style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;">'+fxSn(m.infScore)+'</span></div>'+
+    '<div class="fx-metal-factor"><span style="color:var(--text-dim)">10Y Yield</span><span class="'+fxColCls(m.yieldScore)+'" style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;">'+fxSn(m.yieldScore)+'</span></div>'+
+    '<div class="fx-metal-factor" style="border-bottom:none"><span style="color:var(--text-dim)">Risk Env.</span><span class="'+fxColCls(m.riskScore)+'" style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;">'+fxSn(m.riskScore)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:6px;border-top:1px solid var(--line)"><span style="font-size:11px;font-weight:600;color:var(--text-dim);font-family:\'IBM Plex Mono\',monospace;">Total</span><span class="'+fxColCls(m.total)+'" style="font-family:\'IBM Plex Mono\',monospace;font-size:18px;font-weight:700;">'+fxSn(m.total)+'</span></div>'+
+    '<div class="'+bias.cls+'" style="margin-top:6px;">'+bias.label+'</div></div>';
+  }
+  grid.innerHTML=metalCard('XAU / Gold','color:var(--gold)')+metalCard('XAG / Silver','color:#94a3b8');
+}
+
+function fxRenderPairResult(){
+  const base=document.getElementById('fx-pair-base').value;
+  const quote=document.getElementById('fx-pair-quote').value;
+  const el=document.getElementById('fx-pair-result');if(!el)return;
+  if(base===quote){el.innerHTML='<div style="color:var(--text-dim);font-size:12px;padding:10px 0;">Base aur Quote alag select karen.</div>';return;}
+  let bTotal,qTotal,bCOT={},qCOT={};
+  if(FX_METALS.includes(base)){bTotal=fxMetalBreakdown(fxData).total;}else{const bd=fxCurrencyBreakdown(base,fxData);bTotal=bd.total;bCOT=bd.cot;}
+  if(FX_METALS.includes(quote)){qTotal=fxMetalBreakdown(fxData).total;}else{const qd=fxCurrencyBreakdown(quote,fxData);qTotal=qd.total;qCOT=qd.cot;}
+  const gap=bTotal-qTotal;const bias=fxBiasLabel(gap);
+  const isBull=gap>=2,isBear=gap<=-2;
+  const bDir=bCOT.bias||'neutral',qDir=qCOT.bias||'neutral';
+  let cotNote='';
+  if(isBull&&bDir==='long'&&qDir==='short'){cotNote='✓ COT Confirmed — both institutions aligned.';}
+  else if(isBear&&bDir==='short'&&qDir==='long'){cotNote='✓ COT Confirmed — both institutions aligned.';}
+  else if((isBull||isBear)&&(bDir!=='neutral'||qDir!=='neutral')){cotNote='⚠ COT partial/mixed — individual currencies check karen.';}
+  else{cotNote='COT data insufficient for confirmation.';}
+  if(bCOT.crowded||qCOT.crowded)cotNote+=' | ⚡ Crowded trade.';
+  const reasons=fxTopReasons(base,quote);
+  el.innerHTML='<div class="fx-pair-result"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:17px;font-weight:700;margin-bottom:10px;">'+escapeHtml(base)+escapeHtml(quote)+'</div>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+  '<div style="background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:var(--text-dim);font-family:\'IBM Plex Mono\',monospace;margin-bottom:3px;">'+escapeHtml(base)+'</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:22px;font-weight:700;" class="'+fxColCls(bTotal)+'">'+fxSn(bTotal)+'</div></div>'+
+  '<div style="background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;text-align:center;"><div style="font-size:10px;color:var(--text-dim);font-family:\'IBM Plex Mono\',monospace;margin-bottom:3px;">'+escapeHtml(quote)+'</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:22px;font-weight:700;" class="'+fxColCls(qTotal)+'">'+fxSn(qTotal)+'</div></div>'+
+  '</div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;"><span style="color:var(--text-dim)">Score Gap (Base − Quote)</span><span style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;" class="'+fxColCls(gap)+'">'+fxSn(gap)+'</span></div>'+
+  '<div class="'+bias.cls+'" style="margin-bottom:8px;">'+bias.label+'</div>'+
+  '<div style="font-size:11px;padding:6px 10px;border:1px solid var(--line);background:var(--panel);color:var(--text-dim);font-family:\'IBM Plex Mono\',monospace;">'+escapeHtml(cotNote)+'</div>'+
+  (reasons.length?'<div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px;"><div style="font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;font-family:\'IBM Plex Mono\',monospace;margin-bottom:5px;">Top Reasons</div>'+reasons.map(r=>'<div style="font-size:11.5px;color:var(--text-dim);padding:2px 0;display:flex;align-items:center;gap:6px;"><div style="width:5px;height:5px;border-radius:50%;background:'+r.color+';flex-shrink:0;"></div>'+escapeHtml(r.text)+'</div>').join('')+'</div>':'')+
+  '</div>';
+}
+
+function fxTopReasons(base,quote){
+  const reasons=[];const env=fxData.riskEnvironment||'neutral';
+  function addCcy(ccy,dir){
+    if(FX_METALS.includes(ccy))return;const d=fxData[ccy]||{};
+    const eT=fxSectionTotal(FX_ECON_ITEMS,d.econ||{});if(eT!==0)reasons.push({text:ccy+' Economic Health: '+fxSn(eT),color:eT*dir>0?'#4FAE8E':'#D2694A'});
+    const jT=fxSectionTotal(FX_JOB_ITEMS,d.job||{});if(jT!==0)reasons.push({text:ccy+' Job Market: '+fxSn(jT),color:jT*dir>0?'#4FAE8E':'#D2694A'});
+    const iT=fxSectionTotal(FX_INFLATION_ITEMS,d.inflation||{})+fxToneScore((d.inflation||{}).tone||'neutral');if(iT!==0)reasons.push({text:ccy+' Inflation & CB: '+fxSn(iT),color:iT*dir>0?'#4FAE8E':'#D2694A'});
+    const rS=fxRiskScore(ccy,env);if(rS!==0)reasons.push({text:ccy+' Risk ('+env+'): '+fxSn(rS),color:rS*dir>0?'#4FAE8E':'#D2694A'});
+  }
+  addCcy(base,1);addCcy(quote,-1);
+  return reasons.slice(0,5);
+}
+
+function fxRenderRiskToggle(){
+  const env=fxData.riskEnvironment||'neutral';
+  document.getElementById('fx-risk-on').className='fx-risk-btn'+(env==='risk-on'?' fx-active-on':'');
+  document.getElementById('fx-risk-neut').className='fx-risk-btn'+(env==='neutral'?' fx-active-neut':'');
+  document.getElementById('fx-risk-off').className='fx-risk-btn'+(env==='risk-off'?' fx-active-off':'');
+}
+function fxRenderYieldToggle(){
+  const yld=fxData.yieldTrend||'Flat';
+  document.getElementById('fx-yield-rising').className='fx-yield-btn'+(yld==='Rising'?' fx-sel-rising':'');
+  document.getElementById('fx-yield-flat').className='fx-yield-btn'+(yld==='Flat'?' fx-sel-flat':'');
+  document.getElementById('fx-yield-falling').className='fx-yield-btn'+(yld==='Falling'?' fx-sel-falling':'');
+}
+
+function fxParseCalendarText(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const TRACKED=new Set(['USD','EUR','GBP','JPY','CHF','AUD','CAD','NZD']);
+  const MONTHS={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const DAYS=new Set(['Mon','Tue','Wed','Thu','Fri','Sat','Sun']);
+  const TIMES=/^\d{1,2}:\d{2}(am|pm)$/i;
+  const SPECIAL=new Set(['All Day','Tentative','Day 1','Day 2','Day 3','Day 4','Day 5']);
+  const now=new Date();let curDate=null,curTime='All Day',events=[];let i=0;
+  while(i<lines.length){
+    const l=lines[i];
+    if(DAYS.has(l)){i++;continue;}
+    const dm=l.match(/^([A-Z][a-z]{2})\s+(\d{1,2})$/);
+    if(dm){const mo=MONTHS[dm[1]],dy=parseInt(dm[2],10);if(mo!==undefined){let yr=now.getFullYear();if(mo<now.getMonth()-2)yr++;curDate=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(dy).padStart(2,'0');curTime='All Day';}i++;continue;}
+    if(TIMES.test(l)||SPECIAL.has(l)){curTime=l;i++;continue;}
+    if(TRACKED.has(l)){
+      i++;const en=lines[i]||'';i++;
+      const vals=[];
+      while(i<lines.length&&vals.length<3&&!TRACKED.has(lines[i])&&!DAYS.has(lines[i])&&!/^([A-Z][a-z]{2})\s+\d/.test(lines[i])&&!SPECIAL.has(lines[i])&&!TIMES.test(lines[i])){vals.push(lines[i]);i++;}
+      if(curDate&&en)events.push({date:curDate,time:curTime,currency:l,event:en,val1:vals[0]||'',val2:vals[1]||'',val3:vals[2]||''});
+      continue;
+    }
+    i++;
+  }
+  return events;
+}
+
+function fxRenderCalPreview(parsed){
+  const container=document.getElementById('fx-cal-preview'),rangeEl=document.getElementById('fx-cal-range');
+  if(!container)return;
+  if(!parsed.length){container.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Koi events parse nahi huay.</div>';document.getElementById('fx-cal-import-btn').style.display='none';return;}
+  const dates=parsed.map(e=>e.date).sort();
+  if(rangeEl)rangeEl.textContent='Range: '+dates[0]+' to '+dates[dates.length-1]+' ('+parsed.length+' events)';
+  let html='<table class="fx-cal-table"><thead><tr><th>Date</th><th>Time</th><th>CCY</th><th>Event</th><th>Val1</th><th>Val2</th><th>Val3</th><th></th></tr></thead><tbody>';
+  parsed.forEach((ev)=>{html+='<tr><td contenteditable="true">'+escapeHtml(ev.date)+'</td><td contenteditable="true">'+escapeHtml(ev.time)+'</td><td contenteditable="true">'+escapeHtml(ev.currency)+'</td><td contenteditable="true">'+escapeHtml(ev.event)+'</td><td contenteditable="true">'+escapeHtml(ev.val1)+'</td><td contenteditable="true">'+escapeHtml(ev.val2)+'</td><td contenteditable="true">'+escapeHtml(ev.val3)+'</td><td><button class="fx-del-btn">✕</button></td></tr>';});
+  html+='</tbody></table>';container.innerHTML=html;
+  document.getElementById('fx-cal-import-btn').style.display='block';
+  container.querySelectorAll('.fx-del-btn').forEach(btn=>{btn.addEventListener('click',()=>{const tr=btn.closest('tr');if(tr)tr.remove();});});
+}
+
+async function fxImportCalendar(){
+  if(readOnlyMode)return;
+  const tbody=document.querySelector('#fx-cal-preview .fx-cal-table tbody');if(!tbody)return;
+  const rows=tbody.querySelectorAll('tr');let n=0;const ps=[];
+  rows.forEach(row=>{
+    const cells=row.querySelectorAll('td');if(cells.length<7)return;
+    ps.push(addDoc(fxEventsCol,{date:cells[0].textContent.trim(),time:cells[1].textContent.trim(),currency:cells[2].textContent.trim(),event:cells[3].textContent.trim(),val1:cells[4].textContent.trim(),val2:cells[5].textContent.trim(),val3:cells[6].textContent.trim(),createdAt:Date.now()}));n++;
+  });
+  try{await Promise.all(ps);document.getElementById('fx-cal-preview').innerHTML='';document.getElementById('fx-cal-range').textContent='';document.getElementById('fx-cal-import-btn').style.display='none';document.getElementById('fx-cal-textarea').value='';showToast('✓ '+n+' events imported','success');}
+  catch(err){showToast('✗ '+err.message,'error');}
+}
+
+function fxEventDateTime(ev){
+  try{
+    if(!ev.date)return null;const ts=ev.time||'';
+    if(ts==='All Day'||ts==='Tentative'||/^Day \d/.test(ts))return new Date(ev.date+'T00:00:00');
+    const m=ts.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);if(!m)return new Date(ev.date+'T00:00:00');
+    let h=parseInt(m[1],10);const mn=parseInt(m[2],10),ap=m[3].toLowerCase();
+    if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;
+    return new Date(ev.date+'T'+String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0')+':00');
+  }catch(e){return null;}
+}
+
+function fxRenderUpcoming(){
+  const el=document.getElementById('fx-upcoming-list');if(!el)return;
+  const now=Date.now();
+  const future=fxEventsList.filter(ev=>{const dt=fxEventDateTime(ev);return dt&&dt.getTime()>now;}).sort((a,b)=>fxEventDateTime(a)-fxEventDateTime(b));
+  if(!future.length){el.innerHTML='<div style="color:var(--text-dim);font-size:12px;padding:10px 0;">Koi upcoming events nahi hain.</div>';return;}
+  el.innerHTML=future.map(ev=>'<div style="display:grid;grid-template-columns:100px 44px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line-soft);font-size:12px;"><span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--text-dim);">'+escapeHtml(ev.date)+' '+escapeHtml(ev.time)+'</span><span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;">'+escapeHtml(ev.currency)+'</span><span>'+escapeHtml(ev.event)+'</span><button class="fx-del-btn" data-id="'+ev.id+'">✕</button></div>').join('');
+  el.querySelectorAll('.fx-del-btn').forEach(btn=>{btn.addEventListener('click',async()=>{try{await deleteDoc(doc(db,'fxEvents',btn.dataset.id));}catch(err){showToast('✗ '+err.message,'error');}});});
+}
+
+function fxCheckNotifications(){
+  if(Notification.permission!=='granted')return;
+  const now=Date.now(),limit=15*60*1000;
+  fxEventsList.forEach(ev=>{const dt=fxEventDateTime(ev);if(!dt)return;const diff=dt.getTime()-now;if(diff>0&&diff<=limit){const key='fxN_'+ev.id;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');new Notification('📅 '+ev.currency+': '+ev.event,{body:ev.date+' '+ev.time+' — 15 minutes mein!'});}}});
+}
+
+async function fxSaveSnapshot(){
+  if(readOnlyMode)return;
+  const scores={};FX_CURRENCIES.forEach(c=>{scores[c]=fxCurrencyBreakdown(c,fxData).total;});
+  const mT=fxMetalBreakdown(fxData).total;scores['XAU']=mT;scores['XAG']=mT;
+  try{await addDoc(fxHistoryCol,{date:new Date().toLocaleDateString('en-CA'),scores,createdAt:Date.now()});showToast('✓ Snapshot saved','success');}
+  catch(err){showToast('✗ '+err.message,'error');}
+}
+
+function fxRenderHistory(){
+  const wrap=document.getElementById('fx-history-wrap');if(!wrap)return;
+  if(!fxHistoryList.length){wrap.innerHTML='<div style="color:var(--text-dim);font-size:12px;padding:10px 0;">Koi snapshots nahi hain.</div>';return;}
+  const cols=[...FX_CURRENCIES,'XAU','XAG'];
+  let html='<div style="overflow-x:auto;"><table class="fx-hist-table"><thead><tr><th>Date</th>'+cols.map(c=>'<th style="text-align:center;">'+escapeHtml(c)+'</th>').join('')+'</tr></thead><tbody>';
+  fxHistoryList.forEach(snap=>{
+    html+='<tr><td style="color:var(--text-dim);">'+escapeHtml(snap.date)+'</td>';
+    cols.forEach(c=>{const v=snap.scores&&snap.scores[c]!==undefined?snap.scores[c]:0;html+='<td style="text-align:center;" class="'+fxColCls(v)+'">'+fxSn(v)+'</td>';});
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';wrap.innerHTML=html;
+}
+
+function fxInitCollapsible(){
+  document.querySelectorAll('[data-fxtoggle]').forEach(trigger=>{
+    trigger.addEventListener('click',()=>{
+      const body=document.getElementById(trigger.dataset.fxtoggle);if(!body)return;
+      body.style.display=body.style.display==='none'?'':'none';
+    });
+  });
+}
+
+function fxInit(){
+  onSnapshot(fxFundRef,snap=>{
+    fxData=snap.exists()?snap.data():{riskEnvironment:'neutral',yieldTrend:'Flat'};
+    fxRenderRiskToggle();fxRenderYieldToggle();fxRenderMeter();fxRenderMetals();fxRenderPairResult();
+    const ccy=document.getElementById('fx-ccy-select').value;fxRenderCurrencyEditor(ccy);
+  });
+  onSnapshot(fxEventsCol,snap=>{fxEventsList=[];snap.forEach(d=>fxEventsList.push({id:d.id,...d.data()}));fxRenderUpcoming();});
+  onSnapshot(fxHistoryCol,snap=>{fxHistoryList=[];snap.forEach(d=>fxHistoryList.push({id:d.id,...d.data()}));fxHistoryList.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));fxRenderHistory();});
+
+  document.querySelectorAll('[data-risk]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      if(readOnlyMode)return;
+      fxData.riskEnvironment=btn.dataset.risk;
+      fxRenderRiskToggle();fxRenderMeter();fxRenderMetals();fxRenderPairResult();fxUpdateLiveTotals();
+      try{await setDoc(fxFundRef,{riskEnvironment:btn.dataset.risk},{merge:true});}catch(e){}
+    });
+  });
+  document.querySelectorAll('[data-yield]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      if(readOnlyMode)return;
+      fxData.yieldTrend=btn.dataset.yield;
+      fxRenderYieldToggle();fxRenderMetals();
+      try{await setDoc(fxFundRef,{yieldTrend:btn.dataset.yield},{merge:true});}catch(e){}
+    });
+  });
+  document.querySelectorAll('[data-tone]').forEach(btn=>{btn.addEventListener('click',()=>{fxCurrentTone=btn.dataset.tone;fxSetToneUI(fxCurrentTone);fxUpdateLiveTotals();});});
+  document.getElementById('fx-ccy-select').addEventListener('change',e=>{fxRenderCurrencyEditor(e.target.value);});
+  const sb=document.getElementById('fx-save-btn');if(sb)sb.addEventListener('click',fxSaveCurrency);
+  document.getElementById('fx-pair-base').addEventListener('change',fxRenderPairResult);
+  document.getElementById('fx-pair-quote').addEventListener('change',fxRenderPairResult);
+  document.getElementById('fx-cal-parse-btn').addEventListener('click',()=>{fxCalParsed=fxParseCalendarText(document.getElementById('fx-cal-textarea').value);fxRenderCalPreview(fxCalParsed);});
+  const ib=document.getElementById('fx-cal-import-btn');if(ib)ib.addEventListener('click',fxImportCalendar);
+  const snb=document.getElementById('fx-snap-btn');if(snb)snb.addEventListener('click',fxSaveSnapshot);
+  fxInitCollapsible();
+  if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+  setInterval(fxCheckNotifications,60000);
+  fxRenderCurrencyEditor('USD');fxRenderMeter();fxRenderMetals();fxRenderPairResult();
+}
+
+fxInit();
+
 </script>
 </body>
 </html>
